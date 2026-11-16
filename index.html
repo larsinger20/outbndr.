@@ -474,8 +474,25 @@ main.wash .seg2{background:color-mix(in srgb,var(--card) 60%,transparent)}
 .kbar::before{content:'';position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--mu);opacity:.5}
 
 /* Mein Plan */
-.pday{font-size:20px;font-weight:600;margin:22px 4px 8px;font-family:var(--rnd)}
-.pday:first-of-type{margin-top:0}
+.pnext{display:flex;align-items:center;gap:14px;width:100%;padding:16px 18px;margin-bottom:22px;border-radius:22px;background:var(--card);text-align:left}
+.pnext .gr{flex:1;min-width:0}
+.pnext .eb{display:block;font-size:13px;font-weight:600;color:var(--ac)}
+.pnext b{display:block;font:600 20px/1.2 var(--rnd);margin-top:3px}
+.pnext small{display:block;font-size:15px;color:var(--mu);margin-top:3px}
+.ppill{flex:none;padding:6px 11px;border-radius:999px;background:var(--fill);color:var(--ac);font-size:13px;font-weight:600;white-space:nowrap}
+.ptl{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+.ppast .ptl{margin-bottom:14px}
+.ptr{display:grid;grid-template-columns:52px minmax(0,1fr);gap:12px;align-items:start;position:relative}
+.ptr:not(:last-child)::before{content:'';position:absolute;left:25px;top:64px;bottom:-8px;width:2px;border-radius:1px;background:var(--bd)}
+.pdt{width:52px;height:58px;border-radius:16px;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.pdt small{font-size:11px;font-weight:600;color:var(--ac);text-transform:uppercase}
+.pdt b{font:700 22px/1.05 var(--rnd);font-variant-numeric:tabular-nums}
+.pdt.td{background:var(--acb);color:#fff}.pdt.td small{color:#fff}
+.pdt.open{background:none;box-shadow:inset 0 0 0 1.5px var(--bd)}.pdt.open small{font-size:12px;color:var(--tx);text-transform:none;font-weight:500}
+.ptc{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+.plab{display:flex;justify-content:space-between;gap:8px;padding:2px 4px 0;font-size:13px;font-weight:500}
+.plab span:last-child{white-space:nowrap}
+.ptc .rows{border-radius:18px;padding:0 14px}
 .prow{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:10px 0;border-bottom:.5px solid var(--bd);text-align:left}
 .prow:last-child{border-bottom:0}
 .prow .gr{flex:1;min-width:0}
@@ -483,6 +500,7 @@ main.wash .seg2{background:color-mix(in srgb,var(--card) 60%,transparent)}
 .prow.dn2 .gr{color:var(--mu)}
 .pic{width:34px;height:34px;border-radius:50%;background:var(--fill);display:flex;align-items:center;justify-content:center;flex:none}
 .pic svg{width:18px;height:18px;fill:none;stroke:var(--ac);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.pic.f svg{stroke:var(--org)}
 .card.hl{animation:hl 1.6s ease-out}
 @keyframes hl{0%,30%{box-shadow:0 0 0 3px var(--ac)}100%{box-shadow:0 0 0 3px transparent}}
 /* Zeile mit Vorschlagen + Karte */
@@ -1572,16 +1590,21 @@ function costForm() { const f = Cf, ppl = Object.entries(T.people).sort((a, b) =
 function planHTML() { const by = sigBy(), days = tripDays(T.info), mineAct = a => (by[a.id] || []).includes(T.me);
   const items = T.acts.filter(a => a.title && ((a.cat !== 'food' && mineAct(a)) || (a.cat === 'food' && areas().food && (a.day || mineAct(a)))));   // Essen ausgeschaltet: auch hier nicht
   if (!items.length) return `<div class="card"><div class="empty"><b>Noch nichts geplant</b>Tipp bei Aktivitäten auf „Ich bin dabei“.${areas().food ? ' Essen mit festem Tag erscheint hier automatisch.' : ''}</div></div>`;
-  const open = items.filter(a => !a.done).length, done = items.length - open;
   const groups = {}; items.forEach(a => { const k = a.day || ''; (groups[k] = groups[k] || []).push(a); });
   const keys = Object.keys(groups).sort((a, b) => !a ? 1 : !b ? -1 : a.localeCompare(b));
   const ti = a => a.time ? TIMES.indexOf(a.time) : 9;
-  let h = `<div class="card c2" style="margin-bottom:22px;font-size:15px;color:var(--mu)">${open ? `Du bist bei ${open === 1 ? 'einem Vorschlag' : open + ' Vorschlägen'} dabei${done ? ', ' + done + ' schon erledigt' : ''}.` : `${done === 1 ? 'Ein Vorschlag' : done + ' Vorschläge'} erledigt.`} Ein Tipp auf einen Eintrag springt dorthin.</div>`;
-  const dayB = k => { const l = groups[k].sort((a, b) => ti(a) - ti(b) || (a.title > b.title ? 1 : -1));
-    return `<h2 class="pday">${k ? esc(dayLong(k)) + (k === today() ? ' · Heute' : '') : 'Flexibel'}</h2><div class="rows">` + l.map(a => `<button class="prow${a.done ? ' dn2' : ''}" type="button" data-a="goto" data-aid="${esc(a.id)}"><span class="pic">${a.done ? SY.check : a.cat === 'food' ? ICF.food.replace('class="f2"', '') : SY.pin}</span><span class="gr">${esc(a.title)}<small>${esc([a.time || (k ? 'Tageszeit offen' : ''), a.cat === 'food' ? (a.kind === 'cook' ? 'Kochen' : a.kind === 'rest' ? 'Restaurant' : 'Essen') : '', a.place && a.place.name, a.done ? 'erledigt' : ''].filter(Boolean).join(' · '))}</small></span>${CHR}</button>`).join('') + '</div>'; };
-  const td = today(), pastK = T.info.to && td > T.info.to ? [] : keys.filter(k => k && k < td), n = pastK.reduce((x, k) => x + groups[k].length, 0);
-  if (pastK.length) h += `<button class="fold${planPast ? ' open' : ''}" type="button" data-a="pfold" aria-expanded="${planPast}" style="margin:0 0 18px"><span>Schon vorbei<small>${n}</small></span>${CHEV}</button>` + (planPast ? `<div class="ppast">${pastK.map(dayB).join('')}</div>` : '');
-  h += keys.filter(k => !pastK.includes(k)).map(dayB).join('');
+  // Zeitstrahl (von Lars gewählt 16.11.2026, Variante A): oben „Als Nächstes“, darunter die Tage als Kalenderblätter an einer Linie, Flexibles am Ende
+  const td = today(), over = !!(T.info.to && td > T.info.to), dd = k => Math.round((D(k) - D(td)) / 864e5);
+  const rel = k => { const n = dd(k); return n === 0 ? 'Heute' : n === 1 ? 'Morgen' : n > 1 ? 'in ' + n + ' Tagen' : n === -1 ? 'Gestern' : 'vor ' + -n + ' Tagen'; };
+  const kind = a => a.cat === 'food' ? (a.kind === 'cook' ? 'Kochen' : a.kind === 'rest' ? 'Restaurant' : 'Essen') : '';
+  const dayB = k => { const l = groups[k].sort((a, b) => ti(a) - ti(b) || (a.title > b.title ? 1 : -1)), ok = k && !isNaN(D(k));
+    return `<div class="ptr">${ok ? `<div class="pdt${k === td ? ' td' : ''}"><small>${esc(fmt(D(k), { weekday: 'short' }).replace('.', ''))}</small><b>${D(k).getDate()}</b></div>` : '<div class="pdt open"><small>offen</small></div>'}<div class="ptc"><div class="plab"><span>${ok ? esc(fmt(D(k), { day: 'numeric', month: 'long' })) : 'Noch ohne festen Tag'}</span>${ok && !over ? `<span>${rel(k)}</span>` : ''}</div><div class="rows">`
+      + l.map(a => `<button class="prow${a.done ? ' dn2' : ''}" type="button" data-a="goto" data-aid="${esc(a.id)}"><span class="pic${!a.done && a.cat === 'food' ? ' f' : ''}">${a.done ? SY.check : a.cat === 'food' ? ICF.food.replace('class="f2"', '') : SY.pin}</span><span class="gr">${esc(a.title)}<small>${esc([a.time || (k ? 'Tageszeit offen' : ''), kind(a), a.place && a.place.name, a.done ? 'erledigt' : ''].filter(Boolean).join(' · '))}</small></span>${CHR}</button>`).join('') + '</div></div></div>'; };
+  const nx = over ? null : keys.filter(k => k && k >= td && !isNaN(D(k))).flatMap(k => groups[k].slice().sort((a, b) => ti(a) - ti(b))).find(a => !a.done);
+  let h = nx ? `<button class="pnext" type="button" data-a="goto" data-aid="${esc(nx.id)}"><span class="gr"><span class="eb">Als Nächstes</span><b>${esc(nx.title)}</b><small>${esc([fmt(D(nx.day), { weekday: 'long' }), nx.time, kind(nx), nx.place && nx.place.name].filter(Boolean).join(' · '))}</small></span><span class="ppill">${rel(nx.day)}</span></button>` : '';
+  const pastK = over ? [] : keys.filter(k => k && k < td), n = pastK.reduce((x, k) => x + groups[k].length, 0);
+  if (pastK.length) h += `<button class="fold${planPast ? ' open' : ''}" type="button" data-a="pfold" aria-expanded="${planPast}" style="margin:0 0 18px"><span>Schon vorbei<small>${n}</small></span>${CHEV}</button>` + (planPast ? `<div class="ppast"><div class="ptl">${pastK.map(dayB).join('')}</div></div>` : '');
+  h += '<div class="ptl">' + keys.filter(k => !pastK.includes(k)).map(dayB).join('') + '</div>';
   return h; }
 function goToCard(id) { const a = T.acts.find(x => x.id === id); if (!a) return; const t = tabOf(a); if (!TABS.some(x => x[0] === t)) return; if (a.done) dOpen[t] = true; foodView = 'sug'; stopF = '';
   if (tab !== t) { tab = t; mark(); XL.t = idx() * tw; XR.t = XL.t + tw; kick(); } F = null; draw(true);
