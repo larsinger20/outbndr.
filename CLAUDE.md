@@ -67,6 +67,7 @@ Gemeinsame Reiseplanung für Gruppen (Repository `larsinger20/outbndr.`, früher
   - Schalter gleiten: `swSlide` setzt die Klasse sofort und hält das Neuzeichnen 0,32 s zurück (`slides`).
   - „Ausgabe bearbeiten“ und „Ausgabe eintragen“ aus dem ⋯-Menü öffnen wie alle Formulare über `openForm`.
   - ⋯-Menü: Für die Lichtbrechung wird nur noch der sichtbare Teil der Seite kopiert (`lightClone`, Rest als Platzhalter gleicher Höhe). Dabei gefunden: Menü-Stile (`.mn button`) griffen auch in die Kopie und verzerrten sie; jetzt `.mn .mi button`.
+  - Nach Lars' iPhone-Aufnahmen (16.11.2026, 60 Bilder/s, Bild für Bild verglichen: keine stehenden Bilder mitten in Bewegungen): `flipSnap`/`flipPlay` rechnen mit Stellen im Bild statt im Dokument (nach dem Löschen wurde die Seite kürzer, rutschte, und der Kopf sprang); was nach oben wandert, liegt beim Gleiten obenauf (`zIndex`), sonst schob es sich unter der anderen Kachel durch; die Zeile „Einkaufsliste“ klappt beim Schalter „Essen“ auf/zu (`rowFold`, `foodRow`, `areaIn`) statt zu springen. Aufnahmen auswerten: `ffmpeg` Einzelbilder, Unterschied von Bild zu Bild (Scratchpad `vid/`).
 - **Fallstricke**: CSS-Klassennamen vor dem Anlegen suchen (`.in` = „dabei“-Knopf gefüllt, Eingabefelder heißen `.fi`, `.chv` Pfeil). Das offene ⋯-Menü enthält Kopien des Inhalts (Lichtbrechung): in Tests immer unter `#app` suchen. Löschen in Stapeln: jedes Dokument braucht eine Lösch-Regel, sonst scheitert der ganze Stapel.
 
 ## Testen

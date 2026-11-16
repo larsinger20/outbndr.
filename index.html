@@ -1165,6 +1165,7 @@ function draw(force) {
   if (fk) { const el = A.querySelector(`[data-k="${CSS.escape(fk)}"]`); if (el) { el.focus({ preventScroll: true }); if (sel) try { el.setSelectionRange(sel[0], sel[1]); } catch (e) {} } }
   if (sn) flipPlay(sn, flash);
   if (flash) { const el = A.querySelector(`[data-id="${flash}"]`); flash = null; if (el && !calm()) el.animate([{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 380, easing: 'cubic-bezier(.32,.72,0,1)' }); }
+  if (areaIn) { const el = A.querySelector(`[data-area="${areaIn}"]`); areaIn = ''; rowFold(el, true); }
   segPos(); shopFlip();
   if (inTrip) { mark(); dots(); watchSeen(); }
 }
@@ -1653,6 +1654,11 @@ $('app').addEventListener('input', e => { const el = e.target, f = el.dataset.f;
   if (Cf && !Cf.pay && ((el.dataset.o === 'cf' && f === 'amt') || el.dataset.o === 'cfs')) { const hn = $('chint'); if (hn) hn.textContent = costHint(Cf); } });
 $('app').addEventListener('change', e => { const el = e.target; if (el.tagName === 'SELECT' && el.dataset.f) { const o = objFor(el); if (o) o[el.dataset.f] = el.value; } });
 // Schalter: Knopf gleitet sofort beim Tippen (die Seite wird erst danach neu gezeichnet, sonst sprang er)
+// Zeile in einer Liste weich ein-/ausblenden (Höhe samt Innenabstand), z. B. „Einkaufsliste“, wenn Essen an-/ausgeschaltet wird
+function rowFold(el, open, then) { if (!el || calm()) return then && then(); const cs = getComputedStyle(el), a = { height: el.offsetHeight + 'px', paddingTop: cs.paddingTop, paddingBottom: cs.paddingBottom, minHeight: cs.minHeight, opacity: 1 }, z = { height: '0px', paddingTop: '0px', paddingBottom: '0px', minHeight: '0px', opacity: 0 };
+  el.style.overflow = 'hidden'; slides++; const an = el.animate(open ? [z, a] : [a, z], { duration: open ? 300 : 240, easing: MO.on, fill: open ? 'none' : 'forwards' }); an.onfinish = an.oncancel = () => { if (open) el.style.overflow = ''; slides = Math.max(0, slides - 1); then ? then() : slideDone(); }; }
+let areaIn = '';
+function foodRow(row, on) { if (calm()) return; if (on) { areaIn = 'shop'; return; } const sh = $('app').querySelector('[data-area=shop]'); if (!sh) return; slides++; setTimeout(() => rowFold(sh, false, slideDone), 320); }   // aus: erst gleitet der Schalter, dann klappt die Zeile zu, dann wird neu gezeichnet
 function swSlide(row, on) { const sw = row.querySelector('.sw'); if (sw) sw.classList.toggle('on', on); row.setAttribute('aria-checked', on); if (calm()) return; slides++; setTimeout(slideDone, 320); }
 const growCm = el => { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 132) + 'px'; };   // Kommentarfeld wächst mit dem Text
 $('app').addEventListener('keydown', e => { if (e.key !== 'Enter' || (e.target.tagName !== 'INPUT' && !(e.target.tagName === 'TEXTAREA' && e.target.dataset.cmi != null))) return; const el = e.target;
@@ -1694,8 +1700,8 @@ $('app').addEventListener('click', async e => {
   const colB = e.target.closest('[data-col]'); if (colB) { const o = view.n === 'new' ? Wz : view.n === 'join' ? J : Pf; if (o && !colB.disabled) { o.col = colB.dataset.col; draw(true); } return; }
   const ic = e.target.closest('[data-icon]'); if (ic) { if (view.n === 'new') { Wz.icon = ic.dataset.icon; draw(true); } else if (view.n === 'mood' && T && T.st === 'ok') { if (!isAdmin()) return; try { await updateDoc(tdoc(T.id), { icon: ic.dataset.icon }); } catch (err) { console.error(err); toast(denied(err) ? 'Dafür müssen erst die neuen Regeln in Firebase sein.' : FAIL); } } return; }
   const mo = e.target.closest('[data-mood]'); if (mo) { if (view.n === 'new') { Wz.mood = mo.dataset.mood; draw(true); } else if (view.n === 'mood' && T && T.st === 'ok') { if (!isAdmin()) return; try { await updateDoc(tdoc(T.id), { mood: mo.dataset.mood }); } catch (err) { console.error(err); toast(FAIL); } } return; }
-  const ar = e.target.closest('[data-area]'); if (ar && view.n === 'edit') { const k = ar.dataset.area, a2 = { ...areas(), [k]: !areas()[k] }; swSlide(ar, a2[k]); try { await updateDoc(tdoc(T.id), { areas: a2 }); { const nm = (AREAS.find(x => x[0] === k) || [k, k])[1]; toast(`„${nm}“ ${a2[k] ? 'ist an' : 'ist aus'}`); } } catch (err) { console.error(err); toast(FAIL); draw(true); } return; }
-  if (ar) { const o = view.n === 'new' ? Wz.areas : null; if (o) { const k = ar.dataset.area; o[k] = !o[k]; swSlide(ar, o[k]); if (k === 'food') setTimeout(() => { if (view.n === 'new' && WSTEPS[Wz.step] === 'areas') draw(true); }, calm() ? 0 : 320); } return; }   // Essen blendet die Zeile „Einkaufsliste“ ein/aus: erst nach dem Gleiten neu zeichnen
+  const ar = e.target.closest('[data-area]'); if (ar && view.n === 'edit') { const k = ar.dataset.area, a2 = { ...areas(), [k]: !areas()[k] }; swSlide(ar, a2[k]); if (k === 'food') foodRow(ar, a2[k]); try { await updateDoc(tdoc(T.id), { areas: a2 }); { const nm = (AREAS.find(x => x[0] === k) || [k, k])[1]; toast(`„${nm}“ ${a2[k] ? 'ist an' : 'ist aus'}`); } } catch (err) { console.error(err); toast(FAIL); draw(true); } return; }
+  if (ar) { const o = view.n === 'new' ? Wz.areas : null; if (o) { const k = ar.dataset.area; o[k] = !o[k]; swSlide(ar, o[k]); if (k === 'food') { const wd = () => { if (view.n === 'new' && WSTEPS[Wz.step] === 'areas') draw(true); }; if (calm()) wd(); else if (o[k]) { areaIn = 'shop'; setTimeout(wd, 320); } else setTimeout(() => rowFold($('app').querySelector('[data-area=shop]'), false, wd), 320); } } return; }   // Essen blendet die Zeile „Einkaufsliste“ ein/aus: erst nach dem Gleiten neu zeichnen
   const wk = e.target.closest('[data-wkind]'); if (wk) { Wz.travel = Wz.travel === wk.dataset.wkind ? '' : wk.dataset.wkind; draw(true); return; }
   const lk = e.target.closest('[data-lkind]'); if (lk && Ed && Ed.d) { Ed.d.kind = lk.dataset.lkind; draw(true); return; }
   const lw = e.target.closest('[data-lwho]'); if (lw && Ed && Ed.d) { const w = Ed.d.who = Ed.d.who || [], i = w.indexOf(lw.dataset.lwho); i >= 0 ? w.splice(i, 1) : w.push(lw.dataset.lwho); draw(true); return; }
@@ -1826,10 +1832,12 @@ function closeForm(el, clear = () => {}) { const ae = document.activeElement; if
 // Gemerkt werden die Blöcke der Seite und die Kacheln in den Listen (.list), mit ihrer Stelle im Dokument
 const flipItems = () => { const out = [], cnt = {}; for (const e of $('app').children) { if (e.classList.contains('list')) { for (const k of e.children) out.push([k.dataset.id ? 'id:' + k.dataset.id : 'k:' + k.className, k, e]); continue; }
     const c = e.id || e.className || e.tagName; cnt[c] = (cnt[c] || 0) + 1; out.push(['b:' + c + '#' + cnt[c], e, null]); } return out; };
-function flipSnap() { if (calm()) return null; const m = new Map(), y = scrollY; for (const [k, e, L] of flipItems()) { const r = e.getBoundingClientRect(); m.set(k, { top: r.top + y, left: r.left, w: r.width, h: r.height, node: e, list: L ? (L.classList.contains('dl') ? 'dl' : 'l') : '' }); } return m; }
-function flipPlay(m, skip) { if (!m) return; const D = 360, y = scrollY, vh = innerHeight, near = t => t - y > -vh && t - y < vh * 2, seen = new Set(), lists = {}; let n = 0;
+function flipSnap() { if (calm()) return null; const m = new Map(), y = 0; for (const [k, e, L] of flipItems()) { const r = e.getBoundingClientRect(); m.set(k, { top: r.top + y, left: r.left, w: r.width, h: r.height, node: e, list: L ? (L.classList.contains('dl') ? 'dl' : 'l') : '' }); } return m; }
+// Stellen zählen im Bild, nicht im Dokument: Wird die Seite kürzer und rutscht deshalb, gleitet alles mit (Video Lars 16.11.2026: nach dem Löschen sprang der Kopf)
+function flipPlay(m, skip) { if (!m) return; const D = 360, y = 0, vh = innerHeight, near = t => t - y > -vh && t - y < vh * 2, seen = new Set(), lists = {}; let n = 0;
   for (const [k, e, L] of flipItems()) { seen.add(k); if (L) lists[L.classList.contains('dl') ? 'dl' : 'l'] = L; const o = m.get(k), top = e.getBoundingClientRect().top + y;
-    if (o) { const dy = o.top - top; if (Math.abs(dy) > 1 && (near(top) || near(o.top))) { e.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: D, easing: MO.on }); n++; } }
+    if (o) { const dy = o.top - top; if (Math.abs(dy) > 1 && (near(top) || near(o.top))) { const an = e.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: D, easing: MO.on }); n++;
+        if (L && dy > 1) { e.style.position = 'relative'; e.style.zIndex = 1; an.finished.catch(() => {}).then(() => { e.style.position = e.style.zIndex = ''; }); } } }   // was nach oben wandert, gleitet über den anderen (sonst schob es sich darunter durch)
     else if (L && e.dataset.id !== skip && near(top)) { e.animate([{ opacity: 0, transform: 'scale(.97)' }, { opacity: 1, transform: 'none' }], { duration: D, easing: MO.on }); n++; } }
   // Verschwundene Kacheln blenden an ihrer alten Stelle aus (die alte Kachel selbst, keine Kopie)
   for (const [k, o] of m) { if (seen.has(k) || !o.list || !near(o.top)) continue; const L = lists[o.list] || lists.l; if (!L) continue; const g = o.node, lr = L.getBoundingClientRect();
