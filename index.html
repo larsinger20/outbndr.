@@ -407,7 +407,7 @@ main.wash .seg2{background:color-mix(in srgb,var(--card) 60%,transparent)}
 .rsv svg{width:18px;height:18px;flex:none;fill:none;stroke:var(--ac);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .rvf{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 /* Schalter wie iOS */
-.swr{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 0;border-bottom:.5px solid var(--bd);width:100%;text-align:left}
+.swr{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 0;border-bottom:.5px solid var(--bd);width:100%;text-align:left;transition:opacity .25s}.swr:disabled{opacity:.4}
 .swr:last-child{border-bottom:0}
 .swr .gr{flex:1;min-width:0}
 .swr small{display:block;font-size:13px;color:var(--mu);margin-top:1px}
@@ -1165,7 +1165,6 @@ function draw(force) {
   if (fk) { const el = A.querySelector(`[data-k="${CSS.escape(fk)}"]`); if (el) { el.focus({ preventScroll: true }); if (sel) try { el.setSelectionRange(sel[0], sel[1]); } catch (e) {} } }
   if (sn) flipPlay(sn, flash);
   if (flash) { const el = A.querySelector(`[data-id="${flash}"]`); flash = null; if (el && !calm()) el.animate([{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 380, easing: 'cubic-bezier(.32,.72,0,1)' }); }
-  if (areaIn) { const el = A.querySelector(`[data-area="${areaIn}"]`); areaIn = ''; rowFold(el, true); }
   segPos(); shopFlip();
   if (inTrip) { mark(); dots(); watchSeen(); }
 }
@@ -1219,7 +1218,8 @@ const moodsHTML = cur => '<div class="moods">' + MOODS.map(m => `<button class="
 const iconsHTML = (m, ic) => { const cur = iconOf(m, ic); return `<p class="sec">Symbol</p><div class="icons">` + Object.keys(MICON).map(k => `<button class="icn lq${k === cur ? ' on' : ''}" type="button" data-icon="${k}" style="background:${moodG(m)}" aria-label="Symbol ${k}" aria-pressed="${k === cur}">${SV(MICON[k])}<span class="gl"></span></button>`).join('') + '</div>'; };
 function moodHTML() { return `<div class="hd"><h1>Stimmung</h1><p class="sub">Farbe und Symbol für alle bei „${esc(T.info.name)}“</p></div>${isAdmin() ? moodsHTML(T.info.mood) + iconsHTML(T.info.mood, T.info.icon) : '<p class="hint c">Nur Admins können die Stimmung ändern.</p>'}`; }
 const AREAS = [['food', 'Essen', 'Kochen und Restaurants vorschlagen und abstimmen'], ['shop', 'Einkaufsliste', 'Gemeinsame Liste, auch je Kochvorschlag'], ['cost', 'Kosten teilen', 'Wer hat was bezahlt, wer schuldet wem'], ['plan', 'Mein Plan', 'Wobei ich dabei bin, nach Tagen sortiert'], ['map', 'Karte', 'Alle Orte auf einer Karte']];
-const areasHTML = a => '<div class="rows form">' + AREAS.filter(([k]) => k !== 'shop' || a.food).map(([k, t, s]) => `<button class="swr" type="button" data-area="${k}" role="switch" aria-checked="${!!a[k]}"><span class="gr">${t}<small>${s}</small></span><span class="sw${a[k] ? ' on' : ''}"></span></button>`).join('') + '</div>';
+// „Einkaufsliste“ gehört zu Essen: ist Essen aus, bleibt die Zeile stehen, aber aus und ausgegraut (Wunsch Lars 16.11.2026; vorher verschwand sie)
+const areasHTML = a => '<div class="rows form">' + AREAS.map(([k, t, s]) => { const off = k === 'shop' && !a.food, on = !!a[k] && !off; return `<button class="swr" type="button" data-area="${k}" role="switch" aria-checked="${on}"${off ? ' disabled' : ''}><span class="gr">${t}<small>${s}</small></span><span class="sw${on ? ' on' : ''}"></span></button>`; }).join('') + '</div>';
 const kindChips = (cur, attr) => '<div class="ch">' + Object.entries(KIND).map(([k, v]) => `<button type="button" ${attr}="${k}" class="${cur === k ? 'on' : ''}" aria-pressed="${cur === k}">${v[0]}</button>`).join('') + '</div>';
 function wizHTML() { const w = Wz, s = WSTEPS[w.step], err = w.err ? `<p class="err">${esc(w.err)}</p>` : '', nx = (t = 'Weiter') => `<button class="btn lq" type="button" data-a="wnext">${t}<span class="gl"></span></button>`, sk = t => `<button class="btn g lq" type="button" data-a="wskip">${t}<span class="gl"></span></button>`, head = (t, sub) => `<div class="q">${stepsHTML(w.step)}<h1>${t}</h1><p class="sub">${sub}</p>`;
   if (s === 'name') return head('Wie heißt die Reise?', 'Ein Name, an dem alle sie erkennen.') + `<input class="fi" data-k="wn" data-f="name" maxlength="60" autocomplete="off" autocapitalize="sentences" enterkeyhint="next" placeholder="z. B. Kroatien 2027" value="${esc(w.name)}">${err}<div class="btns">${nx()}</div></div>`;
@@ -1654,12 +1654,9 @@ $('app').addEventListener('input', e => { const el = e.target, f = el.dataset.f;
   if (Cf && !Cf.pay && ((el.dataset.o === 'cf' && f === 'amt') || el.dataset.o === 'cfs')) { const hn = $('chint'); if (hn) hn.textContent = costHint(Cf); } });
 $('app').addEventListener('change', e => { const el = e.target; if (el.tagName === 'SELECT' && el.dataset.f) { const o = objFor(el); if (o) o[el.dataset.f] = el.value; } });
 // Schalter: Knopf gleitet sofort beim Tippen (die Seite wird erst danach neu gezeichnet, sonst sprang er)
-// Zeile in einer Liste weich ein-/ausblenden (Höhe samt Innenabstand), z. B. „Einkaufsliste“, wenn Essen an-/ausgeschaltet wird
-function rowFold(el, open, then) { if (!el || calm()) return then && then(); const cs = getComputedStyle(el), a = { height: el.offsetHeight + 'px', paddingTop: cs.paddingTop, paddingBottom: cs.paddingBottom, minHeight: cs.minHeight, opacity: 1 }, z = { height: '0px', paddingTop: '0px', paddingBottom: '0px', minHeight: '0px', opacity: 0 };
-  el.style.overflow = 'hidden'; slides++; const an = el.animate(open ? [z, a] : [a, z], { duration: open ? 300 : 240, easing: MO.on, fill: open ? 'none' : 'forwards' }); an.onfinish = an.oncancel = () => { if (open) el.style.overflow = ''; slides = Math.max(0, slides - 1); then ? then() : slideDone(); }; }
-let areaIn = '';
-function foodRow(row, on) { if (calm()) return; if (on) { areaIn = 'shop'; return; } const sh = $('app').querySelector('[data-area=shop]'); if (!sh) return; slides++; setTimeout(() => rowFold(sh, false, slideDone), 320); }   // aus: erst gleitet der Schalter, dann klappt die Zeile zu, dann wird neu gezeichnet
-function swSlide(row, on) { const sw = row.querySelector('.sw'); if (sw) sw.classList.toggle('on', on); row.setAttribute('aria-checked', on); if (calm()) return; slides++; setTimeout(slideDone, 320); }
+function swSlide(row, on, shop) { const sw = row.querySelector('.sw'); if (sw) sw.classList.toggle('on', on); row.setAttribute('aria-checked', on);
+  if (row.dataset.area === 'food') { const sh = row.parentElement.querySelector('[data-area=shop]'); if (sh) { sh.disabled = !on; sh.querySelector('.sw').classList.toggle('on', on && shop); sh.setAttribute('aria-checked', on && shop); } }   // Einkaufsliste geht mit Essen aus und wird grau
+  if (calm()) return; slides++; setTimeout(slideDone, 320); }
 const growCm = el => { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 132) + 'px'; };   // Kommentarfeld wächst mit dem Text
 $('app').addEventListener('keydown', e => { if (e.key !== 'Enter' || (e.target.tagName !== 'INPUT' && !(e.target.tagName === 'TEXTAREA' && e.target.dataset.cmi != null))) return; const el = e.target;
   if (el.dataset.cmi != null) { if (e.shiftKey) return; e.preventDefault(); sendCm(el.closest('[data-id]').dataset.id); }
@@ -1700,8 +1697,8 @@ $('app').addEventListener('click', async e => {
   const colB = e.target.closest('[data-col]'); if (colB) { const o = view.n === 'new' ? Wz : view.n === 'join' ? J : Pf; if (o && !colB.disabled) { o.col = colB.dataset.col; draw(true); } return; }
   const ic = e.target.closest('[data-icon]'); if (ic) { if (view.n === 'new') { Wz.icon = ic.dataset.icon; draw(true); } else if (view.n === 'mood' && T && T.st === 'ok') { if (!isAdmin()) return; try { await updateDoc(tdoc(T.id), { icon: ic.dataset.icon }); } catch (err) { console.error(err); toast(denied(err) ? 'Dafür müssen erst die neuen Regeln in Firebase sein.' : FAIL); } } return; }
   const mo = e.target.closest('[data-mood]'); if (mo) { if (view.n === 'new') { Wz.mood = mo.dataset.mood; draw(true); } else if (view.n === 'mood' && T && T.st === 'ok') { if (!isAdmin()) return; try { await updateDoc(tdoc(T.id), { mood: mo.dataset.mood }); } catch (err) { console.error(err); toast(FAIL); } } return; }
-  const ar = e.target.closest('[data-area]'); if (ar && view.n === 'edit') { const k = ar.dataset.area, a2 = { ...areas(), [k]: !areas()[k] }; swSlide(ar, a2[k]); if (k === 'food') foodRow(ar, a2[k]); try { await updateDoc(tdoc(T.id), { areas: a2 }); { const nm = (AREAS.find(x => x[0] === k) || [k, k])[1]; toast(`„${nm}“ ${a2[k] ? 'ist an' : 'ist aus'}`); } } catch (err) { console.error(err); toast(FAIL); draw(true); } return; }
-  if (ar) { const o = view.n === 'new' ? Wz.areas : null; if (o) { const k = ar.dataset.area; o[k] = !o[k]; swSlide(ar, o[k]); if (k === 'food') { const wd = () => { if (view.n === 'new' && WSTEPS[Wz.step] === 'areas') draw(true); }; if (calm()) wd(); else if (o[k]) { areaIn = 'shop'; setTimeout(wd, 320); } else setTimeout(() => rowFold($('app').querySelector('[data-area=shop]'), false, wd), 320); } } return; }   // Essen blendet die Zeile „Einkaufsliste“ ein/aus: erst nach dem Gleiten neu zeichnen
+  const ar = e.target.closest('[data-area]'); if (ar && view.n === 'edit') { const k = ar.dataset.area, a2 = { ...areas(), [k]: !areas()[k] }; swSlide(ar, a2[k], !!a2.shop); try { await updateDoc(tdoc(T.id), { areas: a2 }); { const nm = (AREAS.find(x => x[0] === k) || [k, k])[1]; toast(`„${nm}“ ${a2[k] ? 'ist an' : 'ist aus'}`); } } catch (err) { console.error(err); toast(FAIL); draw(true); } return; }
+  if (ar) { const o = view.n === 'new' ? Wz.areas : null; if (o) { const k = ar.dataset.area; o[k] = !o[k]; swSlide(ar, o[k], !!o.shop); } return; }
   const wk = e.target.closest('[data-wkind]'); if (wk) { Wz.travel = Wz.travel === wk.dataset.wkind ? '' : wk.dataset.wkind; draw(true); return; }
   const lk = e.target.closest('[data-lkind]'); if (lk && Ed && Ed.d) { Ed.d.kind = lk.dataset.lkind; draw(true); return; }
   const lw = e.target.closest('[data-lwho]'); if (lw && Ed && Ed.d) { const w = Ed.d.who = Ed.d.who || [], i = w.indexOf(lw.dataset.lwho); i >= 0 ? w.splice(i, 1) : w.push(lw.dataset.lwho); draw(true); return; }
