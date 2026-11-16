@@ -285,11 +285,11 @@ main.rcl.mst{animation:none}
 .mn .mi{position:absolute;right:0;width:250px;padding:8px 0;transform-origin:100% 0}
 .mn .mi.up{transform-origin:100% 100%}.mn .mi.lf{right:auto;left:0;transform-origin:0 0}.mn .mi.lf.up{transform-origin:0 100%}
 .mn .grp+.grp{margin-top:8px;padding-top:8px;background:linear-gradient(var(--mdiv),var(--mdiv)) 16px 0/calc(100% - 39px) 1px no-repeat}
-.mn button{display:flex;align-items:center;gap:14px;width:calc(100% - 12px);margin:0 6px;padding:0 14px 0 15px;min-height:48px;border-radius:16px;font-size:17px;line-height:22px;text-align:left;transition:background .15s}
-.mn button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
-.mn button.hl{background:var(--hlc);transition:none}
-.mn .dg{color:var(--mrd)}
-.mn .dg span{text-shadow:0 0 8px var(--halo),0 0 2px var(--halo)}.mn .dg svg{filter:drop-shadow(0 0 3px var(--halo))}
+.mn .mi button{display:flex;align-items:center;gap:14px;width:calc(100% - 12px);margin:0 6px;padding:0 14px 0 15px;min-height:48px;border-radius:16px;font-size:17px;line-height:22px;text-align:left;transition:background .15s}
+.mn .mi button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.mn .mi button.hl{background:var(--hlc);transition:none}
+.mn .mi .dg{color:var(--mrd)}
+.mn .mi .dg span{text-shadow:0 0 8px var(--halo),0 0 2px var(--halo)}.mn .mi .dg svg{filter:drop-shadow(0 0 3px var(--halo))}
 .knob{position:fixed;z-index:32;pointer-events:none;will-change:transform;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center}
 .knob svg{width:20px;height:20px;fill:var(--tx)}
 
@@ -768,9 +768,9 @@ let undoP = null;
 const gone = id => !!undoP && undoP.ids.has(id);
 function flushUndo() { if (!undoP) return; const u = undoP; undoP = null; clearTimeout(u.t); document.querySelector('.toast.un')?.remove(); u.run(); }
 function softDel(ids, run, back) { flushUndo(); const u = undoP = { ids: new Set(ids), back, run: () => { Promise.resolve().then(run).catch(e => { console.error(e); back(); toast(FAIL); draw(true); }); } };
-  u.t = setTimeout(() => { if (undoP === u) flushUndo(); }, 5000); draw(true);
+  u.t = setTimeout(() => { if (undoP === u) flushUndo(); }, 5000); flipNext = true; draw(true);
   document.querySelector('.toast')?.remove(); clearTimeout(toastT); const d = document.createElement('div'); d.className = 'toast un'; d.setAttribute('role', 'status'); d.innerHTML = '<span>Gelöscht</span><button type="button">Rückgängig</button>'; document.body.append(d);
-  d.querySelector('button').addEventListener('click', () => { if (undoP !== u) return; undoP = null; clearTimeout(u.t); d.remove(); back(); draw(true); }); }
+  d.querySelector('button').addEventListener('click', () => { if (undoP !== u) return; undoP = null; clearTimeout(u.t); d.remove(); back(); flipNext = true; draw(true); }); }
 document.addEventListener('visibilitychange', () => { if (document.hidden) flushUndo(); }); addEventListener('pagehide', flushUndo);
 function toast(t) { flushUndo(); document.querySelector('.toast')?.remove(); const d = document.createElement('div'); d.className = 'toast'; d.setAttribute('role', 'status'); d.textContent = t; document.body.append(d);
   clearTimeout(toastT); toastT = setTimeout(() => d.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 250 }).onfinish = () => d.remove(), 2200); }
@@ -850,7 +850,7 @@ let infoOpen = false, infoSeg = 'wx';
 let pasteOpen = false, pasteVal = '', pasteErr = '';
 const cmOpen = new Set(), cmDraft = {}, shopOpen = new Set(), shopDraft = {}, sugOpen = new Set(), kOpen = new Set();
 const dOpen = { act: false, food: false }; let archOpen = false;
-let pending = false, flash = null, shownNew = new Set();
+let pending = false, flash = null, shownNew = new Set(), flipNext = false, flipKeyLast = '', tabSw = false;
 const PS = {};         // Ortssuche je Feld: { res, q }
 
 /* ---------- Adressen: #/ Start · #/neu · #/e/{reise}/{schlüssel} Einladung · #/r/{reise}[/leute|/profil|/stimmung|/reise] ---------- */
@@ -1137,6 +1137,9 @@ function draw(force) {
   const A = $('app'), key = view.n + '|' + (view.n === 'new' ? Wz.step : '') + '|' + (T ? T.st : '') + '|' + (J ? J.st : ''), fresh = key !== lastKey; lastKey = key;
   const act = document.activeElement, fk = act && A.contains(act) && act.dataset.k, sel = fk && act.selectionStart != null ? [act.selectionStart, act.selectionEnd] : null;
   const inTrip = view.n === 'trip' && T && T.st === 'ok';
+  // Listen gleiten statt zu springen: bei Live-Daten und wenn eine Aktion es anmeldet (flipNext); nicht beim Auf-/Zuklappen (das bewegt selbst)
+  const fkey = inTrip ? T.id + '|' + tab + '|' + foodView : '', sn = (!force || flipNext) && !fresh && !tabSw && fkey && fkey === flipKeyLast ? flipSnap() : null; flipNext = false; flipKeyLast = fkey;
+  const hadInfo = !!A.querySelector('.hinfo');
   let h = '', back = null, more = false;
   if (view.n === 'home') h = homeHTML();
   else if (view.n === 'new') { h = wizHTML(); back = Wz.step === WSTEPS.length - 1 ? null : 1; }
@@ -1155,10 +1158,12 @@ function draw(force) {
   A.innerHTML = h;
   $('back').hidden = !back; $('more').hidden = !more; $('tbar').hidden = !inTrip;
   const lc = LAY === 'C' && inTrip; $('fab').hidden = !lc; $('mapt').hidden = !(lc && areas().map); if (document.documentElement.classList.contains('lc') !== lc) { document.documentElement.classList.toggle('lc', lc); geo(); }
-  if (fresh && !calm() && !navBusy) { A.classList.remove('fade'); void A.offsetWidth; A.classList.add('fade'); }
+  if (tabSw) { tabSw = false; if (!calm()) for (const n of A.children) { if (n.classList.contains('hd')) { const i = n.querySelector('.hinfo'); if (i && !hadInfo) i.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: 'ease' }); } else n.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: 'ease' }); } }   // Reiterwechsel: Kopf (Titel, Verlauf) bleibt stehen, nur der Inhalt blendet ein
+  else if (fresh && !calm() && !navBusy) { A.classList.remove('fade'); void A.offsetWidth; A.classList.add('fade'); }
   A.querySelectorAll('textarea[data-cmi]').forEach(t => { if (t.value) growCm(t); });
   topTitle(); document.documentElement.classList.toggle('fo', !!(view.n === 'trip' && (F || Cf || Rv)));   // Formular offen: Reiter-Leiste weg (verdeckt sonst die Knöpfe)
   if (fk) { const el = A.querySelector(`[data-k="${CSS.escape(fk)}"]`); if (el) { el.focus({ preventScroll: true }); if (sel) try { el.setSelectionRange(sel[0], sel[1]); } catch (e) {} } }
+  if (sn) flipPlay(sn, flash);
   if (flash) { const el = A.querySelector(`[data-id="${flash}"]`); flash = null; if (el && !calm()) el.animate([{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 380, easing: 'cubic-bezier(.32,.72,0,1)' }); }
   segPos(); shopFlip();
   if (inTrip) { mark(); dots(); watchSeen(); }
@@ -1647,6 +1652,8 @@ $('app').addEventListener('input', e => { const el = e.target, f = el.dataset.f;
   if (el.type === 'date' && f === 'from' && (o === Ed || (Ed && o === Ed.d && Ed.kind === 'stop'))) { if (o.to && o.to < o.from) o.to = o.from; draw(true); }
   if (Cf && !Cf.pay && ((el.dataset.o === 'cf' && f === 'amt') || el.dataset.o === 'cfs')) { const hn = $('chint'); if (hn) hn.textContent = costHint(Cf); } });
 $('app').addEventListener('change', e => { const el = e.target; if (el.tagName === 'SELECT' && el.dataset.f) { const o = objFor(el); if (o) o[el.dataset.f] = el.value; } });
+// Schalter: Knopf gleitet sofort beim Tippen (die Seite wird erst danach neu gezeichnet, sonst sprang er)
+function swSlide(row, on) { const sw = row.querySelector('.sw'); if (sw) sw.classList.toggle('on', on); row.setAttribute('aria-checked', on); if (calm()) return; slides++; setTimeout(slideDone, 320); }
 const growCm = el => { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 132) + 'px'; };   // Kommentarfeld wächst mit dem Text
 $('app').addEventListener('keydown', e => { if (e.key !== 'Enter' || (e.target.tagName !== 'INPUT' && !(e.target.tagName === 'TEXTAREA' && e.target.dataset.cmi != null))) return; const el = e.target;
   if (el.dataset.cmi != null) { if (e.shiftKey) return; e.preventDefault(); sendCm(el.closest('[data-id]').dataset.id); }
@@ -1687,8 +1694,8 @@ $('app').addEventListener('click', async e => {
   const colB = e.target.closest('[data-col]'); if (colB) { const o = view.n === 'new' ? Wz : view.n === 'join' ? J : Pf; if (o && !colB.disabled) { o.col = colB.dataset.col; draw(true); } return; }
   const ic = e.target.closest('[data-icon]'); if (ic) { if (view.n === 'new') { Wz.icon = ic.dataset.icon; draw(true); } else if (view.n === 'mood' && T && T.st === 'ok') { if (!isAdmin()) return; try { await updateDoc(tdoc(T.id), { icon: ic.dataset.icon }); } catch (err) { console.error(err); toast(denied(err) ? 'Dafür müssen erst die neuen Regeln in Firebase sein.' : FAIL); } } return; }
   const mo = e.target.closest('[data-mood]'); if (mo) { if (view.n === 'new') { Wz.mood = mo.dataset.mood; draw(true); } else if (view.n === 'mood' && T && T.st === 'ok') { if (!isAdmin()) return; try { await updateDoc(tdoc(T.id), { mood: mo.dataset.mood }); } catch (err) { console.error(err); toast(FAIL); } } return; }
-  const ar = e.target.closest('[data-area]'); if (ar && view.n === 'edit') { const k = ar.dataset.area, a2 = { ...areas(), [k]: !areas()[k] }; try { await updateDoc(tdoc(T.id), { areas: a2 }); { const nm = (AREAS.find(x => x[0] === k) || [k, k])[1]; toast(`„${nm}“ ${a2[k] ? 'ist an' : 'ist aus'}`); } } catch (err) { console.error(err); toast(FAIL); } return; }
-  if (ar) { const o = view.n === 'new' ? Wz.areas : null; if (o) { o[ar.dataset.area] = !o[ar.dataset.area]; draw(true); } return; }
+  const ar = e.target.closest('[data-area]'); if (ar && view.n === 'edit') { const k = ar.dataset.area, a2 = { ...areas(), [k]: !areas()[k] }; swSlide(ar, a2[k]); try { await updateDoc(tdoc(T.id), { areas: a2 }); { const nm = (AREAS.find(x => x[0] === k) || [k, k])[1]; toast(`„${nm}“ ${a2[k] ? 'ist an' : 'ist aus'}`); } } catch (err) { console.error(err); toast(FAIL); draw(true); } return; }
+  if (ar) { const o = view.n === 'new' ? Wz.areas : null; if (o) { const k = ar.dataset.area; o[k] = !o[k]; swSlide(ar, o[k]); if (k === 'food') setTimeout(() => { if (view.n === 'new' && WSTEPS[Wz.step] === 'areas') draw(true); }, calm() ? 0 : 320); } return; }   // Essen blendet die Zeile „Einkaufsliste“ ein/aus: erst nach dem Gleiten neu zeichnen
   const wk = e.target.closest('[data-wkind]'); if (wk) { Wz.travel = Wz.travel === wk.dataset.wkind ? '' : wk.dataset.wkind; draw(true); return; }
   const lk = e.target.closest('[data-lkind]'); if (lk && Ed && Ed.d) { Ed.d.kind = lk.dataset.lkind; draw(true); return; }
   const lw = e.target.closest('[data-lwho]'); if (lw && Ed && Ed.d) { const w = Ed.d.who = Ed.d.who || [], i = w.indexOf(lw.dataset.lwho); i >= 0 ? w.splice(i, 1) : w.push(lw.dataset.lwho); draw(true); return; }
@@ -1756,7 +1763,7 @@ $('app').addEventListener('click', async e => {
   if (a === 'call') { Cf.for = Cf.for.length === Object.keys(T.people).length ? [] : Object.keys(T.people); return draw(true); }
   if (a === 'csave') return saveCost();
   if (a === 'cown') { Cf.own = !Cf.own; Cf.err = ''; return draw(true); }
-  if (a === 'cedit') { const c = T.costs.find(x => x.id === b.dataset.cid); if (!c) return; markSeen([c.id, c.ets ? c.id + ':' + c.ets : null].filter(Boolean)); Cf = { id: c.id, t: c.title, amt: (c.amt / 100).toFixed(2).replace('.', ','), dt: cDay(c), by: c.by, for: [...(c.for || [])], own: !!shOf(c), sh: shOf(c) ? Object.fromEntries(c.for.map(u => [u, (c.sh[u] / 100).toFixed(2).replace('.', ',')])) : {} }; draw(true); scrollTo({ top: 0, behavior: calm() ? 'auto' : 'smooth' }); return; }
+  if (a === 'cedit') { const c = T.costs.find(x => x.id === b.dataset.cid); if (!c) return; markSeen([c.id, c.ets ? c.id + ':' + c.ets : null].filter(Boolean)); Cf = { id: c.id, t: c.title, amt: (c.amt / 100).toFixed(2).replace('.', ','), dt: cDay(c), by: c.by, for: [...(c.for || [])], own: !!shOf(c), sh: shOf(c) ? Object.fromEntries(c.for.map(u => [u, (c.sh[u] / 100).toFixed(2).replace('.', ',')])) : {} }; draw(true); openForm('#cform'); return; }
   if (a === 'cdel') return delCost(b.dataset.cid);
   if (a === 'ctick') { const r = b.closest('[data-tf]'); return tickPay(r.dataset.tf, r.dataset.tt, +r.dataset.amt); }
   if (a === 'kfold') { const k = b.dataset.k2; return foldRow(kOpen.has(k), v => { v ? kOpen.add(k) : kOpen.delete(k); }, `#app [data-kg="${k}"]`, `#app [data-k2="${k}"] svg`); }
@@ -1816,17 +1823,20 @@ function closeForm(el, clear = () => {}) { const ae = document.activeElement; if
     if (y0 != null && Math.abs(y0 - scrollY) > 2) glideTo(y0, fin); else fin(); }); }
 // Umschalter: Perle gleitet von der alten Stelle, Inhalt darunter blendet ein
 // Liste wie iOS umsortieren: Bleibendes gleitet an die neue Stelle, Neues blendet ein, Verschwindendes blendet an alter Stelle aus (nur transform/opacity)
-const flipKey = e => e.dataset.id || e.className;
-function flipSnap() { const L = document.querySelector('#app .list'); if (!L || calm()) return null; const m = new Map(), lr = L.getBoundingClientRect();
-  for (const e of L.children) { const r = e.getBoundingClientRect(); m.set(flipKey(e), { top: r.top, x: r.left - lr.left, y: r.top - lr.top, w: r.width, node: e.cloneNode(true) }); } return m; }
-function flipPlay(m) { const L = document.querySelector('#app .list'); if (!L || !m) return; const D = 360, seen = new Set(); slides++; setTimeout(slideDone, D + 40);
-  for (const e of [...L.children]) { const k = flipKey(e), o = m.get(k); seen.add(k);
-    if (o) { const dy = o.top - e.getBoundingClientRect().top; if (Math.abs(dy) > 1) e.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: D, easing: MO.on }); }
-    else e.animate([{ opacity: 0, transform: 'scale(.97)' }, { opacity: 1, transform: 'none' }], { duration: D, easing: MO.on }); }
-  L.style.position = 'relative';
-  for (const [k, o] of m) { if (seen.has(k)) continue; const g = o.node; g.querySelectorAll('[id]').forEach(x => x.removeAttribute('id')); g.removeAttribute('data-id'); g.setAttribute('aria-hidden', 'true');
-    Object.assign(g.style, { position: 'absolute', left: o.x + 'px', top: o.y + 'px', width: o.w + 'px', margin: 0, pointerEvents: 'none', zIndex: 0 }); L.append(g);
-    g.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(.97)' }], { duration: D * .7, easing: MO.on, fill: 'forwards' }).finished.then(() => g.remove(), () => g.remove()); } }
+// Gemerkt werden die Blöcke der Seite und die Kacheln in den Listen (.list), mit ihrer Stelle im Dokument
+const flipItems = () => { const out = [], cnt = {}; for (const e of $('app').children) { if (e.classList.contains('list')) { for (const k of e.children) out.push([k.dataset.id ? 'id:' + k.dataset.id : 'k:' + k.className, k, e]); continue; }
+    const c = e.id || e.className || e.tagName; cnt[c] = (cnt[c] || 0) + 1; out.push(['b:' + c + '#' + cnt[c], e, null]); } return out; };
+function flipSnap() { if (calm()) return null; const m = new Map(), y = scrollY; for (const [k, e, L] of flipItems()) { const r = e.getBoundingClientRect(); m.set(k, { top: r.top + y, left: r.left, w: r.width, h: r.height, node: e, list: L ? (L.classList.contains('dl') ? 'dl' : 'l') : '' }); } return m; }
+function flipPlay(m, skip) { if (!m) return; const D = 360, y = scrollY, vh = innerHeight, near = t => t - y > -vh && t - y < vh * 2, seen = new Set(), lists = {}; let n = 0;
+  for (const [k, e, L] of flipItems()) { seen.add(k); if (L) lists[L.classList.contains('dl') ? 'dl' : 'l'] = L; const o = m.get(k), top = e.getBoundingClientRect().top + y;
+    if (o) { const dy = o.top - top; if (Math.abs(dy) > 1 && (near(top) || near(o.top))) { e.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: D, easing: MO.on }); n++; } }
+    else if (L && e.dataset.id !== skip && near(top)) { e.animate([{ opacity: 0, transform: 'scale(.97)' }, { opacity: 1, transform: 'none' }], { duration: D, easing: MO.on }); n++; } }
+  // Verschwundene Kacheln blenden an ihrer alten Stelle aus (die alte Kachel selbst, keine Kopie)
+  for (const [k, o] of m) { if (seen.has(k) || !o.list || !near(o.top)) continue; const L = lists[o.list] || lists.l; if (!L) continue; const g = o.node, lr = L.getBoundingClientRect();
+    g.querySelectorAll('[id]').forEach(x => x.removeAttribute('id')); g.removeAttribute('data-id'); g.removeAttribute('data-seen'); g.setAttribute('aria-hidden', 'true'); g.inert = true; L.style.position = 'relative';
+    Object.assign(g.style, { position: 'absolute', left: (o.left - lr.left) + 'px', top: (o.top - y - lr.top) + 'px', width: o.w + 'px', margin: 0, pointerEvents: 'none', zIndex: 0 }); L.append(g); n++;
+    g.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(.97)' }], { duration: D * .7, easing: MO.on, fill: 'forwards' }).finished.then(() => g.remove(), () => g.remove()); }
+  if (n) { slides++; setTimeout(slideDone, D + 40); } }   // solange etwas gleitet, warten weitere Live-Daten
 function segSwitch(btn, apply, flip) { const s = btn.closest('.seg2'), key = s.dataset.seg, ind = s.querySelector('.ind2'), old = { w: ind.style.width, x: ind.style.translate }, sn = flip ? flipSnap() : null;
   apply(); draw(true); const s2 = document.querySelector(`#app .seg2[data-seg="${key}"]`); if (!s2 || calm()) return; const i2 = s2.querySelector('.ind2'), fin = { w: i2.style.width, x: i2.style.translate };
   i2.style.transition = 'none'; i2.style.width = old.w; i2.style.translate = old.x; void i2.offsetWidth; i2.style.transition = ''; i2.style.width = fin.w; i2.style.translate = fin.x;
@@ -2003,7 +2013,7 @@ function menuFor(btn) { const k = btn.dataset.menu;
     if (canEdit(a) && !a.done) g[0].push([MP.clock, a.res ? 'Reservierung ändern' : 'Reservierung', () => { Rv = { id, t: (a.res || {}).t || '', p: (a.res || {}).p || '' }; draw(true); openForm(`#app [data-id="${CSS.escape(id)}"] .rvw`); }]);
     g[0].push([MP.cm, 'Kommentar', () => { cmOpen.add(id); readCm(id); draw(true); const el = document.querySelector(`#app [data-k="cm-${CSS.escape(id)}"]`); if (el) { glideTo(el.getBoundingClientRect().top + scrollY - innerHeight * .3); el.focus({ preventScroll: true }); } }]);
     if (a.cat === 'food' && a.kind === 'cook' && !a.done && shopOn()) g[0].push([MP.cart, 'Einkaufsliste', () => { shopOpen.add(id); draw(true); const el = document.querySelector(`#app [data-shi="${CSS.escape(id)}"]`); if (el) glideTo(el.getBoundingClientRect().top + scrollY - innerHeight * .3); }]);
-    if (areas().cost) g[0].push([MP.euro, 'Ausgabe eintragen', () => { tab = 'cost'; mark(); XL.t = idx() * tw; XR.t = XL.t + tw; kick(); Cf = { t: a.title, amt: '', dt: today(), by: T.me, for: (sigBy()[id] || []).length > 1 ? [...sigBy()[id]] : Object.keys(T.people) }; draw(true); scrollTo(0, 0); $('ca')?.focus({ preventScroll: true }); }]);
+    if (areas().cost) g[0].push([MP.euro, 'Ausgabe eintragen', () => { tab = 'cost'; mark(); XL.t = idx() * tw; XR.t = XL.t + tw; kick(); Cf = { t: a.title, amt: '', dt: today(), by: T.me, for: (sigBy()[id] || []).length > 1 ? [...sigBy()[id]] : Object.keys(T.people) }; draw(true); scrollTo(0, 0); openForm('#cform', '#ca'); }]);
     g[1].push(a.done ? [MP.back, 'Wieder offen', () => setDone(id, false)] : [MP.done, 'Als erledigt markieren', () => setDone(id, true)]);
     if (canEdit(a)) g.push([[MP.del, 'Löschen', () => delAct(id), 'dg']]);
     return g; }
@@ -2135,7 +2145,7 @@ function drawBar() {
     k.style.clipPath = B <= t0 || A >= t1 ? '' : A <= t0 && B >= t1 ? 'inset(0 100% 0 0)' : A > t0 ? `inset(0 ${(t1 - A).toFixed(1)}px 0 0)` : `inset(0 0 0 ${(B - t0).toFixed(1)}px)`; }
 }
 function select(k) { if (k === tab) { scrollTo({ top: 0, behavior: calm() ? 'auto' : 'smooth' }); return; }
-  mark(); navTo('tab', () => { tab = k; F = null; Cf = null; Rv = null; shownNew = new Set(); if (k === 'food') foodView = 'sug'; lastKey = 'tab'; draw(true); scrollTo(0, 0); }); }
+  mark(); navTo('tab', () => { tab = k; F = null; Cf = null; Rv = null; shownNew = new Set(); if (k === 'food') foodView = 'sug'; tabSw = true; draw(true); scrollTo(0, 0); }); }
 let drag = null;
 const glowAt = e => { const r = bar.getBoundingClientRect(); bar.style.setProperty('--gx', (e.clientX - r.left) + 'px'); bar.style.setProperty('--gy', (e.clientY - r.top) + 'px'); };
 bar.addEventListener('pointerdown', e => {
@@ -2205,8 +2215,14 @@ function mtick(t) { const M = menu; if (!M || M.closing) { mraf = 0; return; }
   const dt = Math.min(.034, (t - mlast) / 1000); mlast = t; for (let i = 0; i < 4; i++) { M.P.step(dt / 4); M.Q.step(dt / 4); } mframe(M);
   if (M.P.busy() || M.Q.busy()) { mraf = requestAnimationFrame(mtick); return; }
   mraf = 0; M.P.snap(); M.Q.snap(); mframe(M); }
-function menuBands(M) { const src = $('app'), r = src.getBoundingClientRect(); M.mr = { l: r.left, t: r.top }; M.rb = [];
-  for (const k of ['t', 'b', 'l', 'r']) { const b = document.createElement('div'), sc = document.createElement('div'), c = src.cloneNode(true);
+// Kopie der Seite für die Lichtbrechung: nur was im Bild ist; alles andere wird durch leere Platzhalter gleicher Höhe ersetzt (lange Seiten ließen das Öffnen stocken)
+function lightClone(src) { const c = src.cloneNode(false), vh = innerHeight, vis = e => { const r = e.getBoundingClientRect(); return r.bottom > -150 && r.top < vh + 150; };
+  const gap = (e, grid) => { const d = document.createElement('div'); d.style.height = e.offsetHeight + 'px'; if (!grid) { const cs = getComputedStyle(e); d.style.margin = cs.marginTop + ' 0 ' + cs.marginBottom; } return d; };
+  for (const ch of src.children) { if (!vis(ch)) { c.append(gap(ch)); continue; }
+    if (ch.classList.contains('list')) { const l = ch.cloneNode(false); for (const k of ch.children) l.append(vis(k) ? k.cloneNode(true) : gap(k, true)); c.append(l); } else c.append(ch.cloneNode(true)); }
+  return c; }
+function menuBands(M) { const src = $('app'), r = src.getBoundingClientRect(), lc = lightClone(src); M.mr = { l: r.left, t: r.top }; M.rb = [];
+  for (const k of ['t', 'b', 'l', 'r']) { const b = document.createElement('div'), sc = document.createElement('div'), c = lc.cloneNode(true);
     b.className = 'rb mrb ' + k; sc.className = 'rs'; c.removeAttribute('id'); c.querySelectorAll('[id]').forEach(e => e.removeAttribute('id')); c.classList.remove('fade'); c.classList.add('rcl', 'mst'); c.setAttribute('aria-hidden', 'true'); c.inert = true; c.style.width = src.offsetWidth + 'px';
     sc.append(c); b.append(sc); M.m.insertBefore(b, M.inn); M.rb.push({ k, c }); } }
 function closeMenu(then) { const M = menu; if (!M || M.closing) return; M.c.remove();

@@ -55,6 +55,7 @@ Stand: 10.11.2026. **Vorlage mit allen Mustern zum Abschauen: `vorlagen/glas-pro
   - Aufklapp-Zeilen (Kommentare, Einkaufsliste, Erledigt, Archiv, Vorschläge, Kosten-Übersichten) und Formulare (Vorschlag, Ausgabe, Reservierung, Stopp, Fahrt): Höhe + Deckkraft mit der iOS-Kurve (siehe oben). Gilt für Abbrechen und Speichern gleich. Der Pfeil dreht sich im selben Takt.
   - Umschalter (Reise-Info, Essen): Perle gleitet 0,42 s mit Feder von der alten Stelle, der Inhalt darunter blendet in 0,22 s ein.
   - Während einer Bewegung warten Live-Daten anderer (`slides`), damit nichts abreißt.
+- **Nichts springt** (16.11.2026): Ändert sich eine Liste (Daumen, Löschen, Rückgängig, Erledigt, Neues von anderen), gleiten die Kacheln 0,36 s an ihren Platz, Neues blendet ein, Verschwundenes blendet an alter Stelle aus. Beim Reiterwechsel bleibt der Kopf stehen, nur der Inhalt blendet ein. Schalter gleiten wie in iOS. Zustände nie hart austauschen, wenn das Element sichtbar bleibt.
 - **Filter** sind Umschalter (Segmented Control) wie in iOS, keine losen Pillen; erst ab 5 Einträgen eine wischbare Pillen-Zeile. Ändert sich eine Liste (Filter), gleiten die Kacheln an ihre neue Stelle, nichts springt.
 - **Antippen statt Berühren** bei Auswahllisten (Ortsvorschläge): Übernommen wird erst beim Loslassen ohne Bewegung und ohne Scrollen (Lars: Scrollen übernahm sonst einen Vorschlag).
 
