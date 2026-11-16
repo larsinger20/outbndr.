@@ -803,11 +803,11 @@ function rangeK(a, b) { if (!a) return 'Zeitraum noch offen'; const x = D(a), y 
   if (x.getMonth() !== y.getMonth() || x.getFullYear() !== y.getFullYear()) return fmt(x, { day: 'numeric', month: 'short' }) + ' – ' + fmt(y, { day: 'numeric', month: 'short' }) + yr;
   return x.getDate() + '.–' + fmt(y, { day: 'numeric', month: 'short' }) + yr; }
 const shortRange = (a, b) => !a ? '' : a === (b || a) ? fmt(D(a), { day: 'numeric', month: 'numeric' }) : fmt(D(a), { day: 'numeric', month: 'numeric' }) + '–' + fmt(D(b), { day: 'numeric', month: 'numeric' });
-function tripDays(info) { if (!info || !info.from) return []; const out = [], end = D(info.to || info.from); for (let d = D(info.from), i = 0; d <= end && i < 60; d.setDate(d.getDate() + 1), i++) out.push(iso(d)); return out; }
+function tripDays(info) { if (!info || !info.from) return []; const out = [], end = D(info.to || info.from); for (let d = D(info.from), i = 0; d <= end && i < 366; d.setDate(d.getDate() + 1), i++) out.push(iso(d)); return out; }
 // Kopf: Countdown, unterwegs mit Tag und Stopp („Heute: Split → Hvar“), danach Rückblick
 function countdown(info) { if (!info || !info.from) return ''; const td = today(), t = D(td), a = D(info.from), b = D(info.to || info.from), days = Math.round((a - t) / 864e5), len = Math.round((b - a) / 864e5) + 1;
   if (days > 1) return 'Noch ' + days + ' Tage'; if (days === 1) return 'Morgen geht es los';
-  if (t <= b) { const st = (info.stops || []).filter(s => s.name && DAY_OK(s.from)), now = st.find(s => s.from <= td && td <= (s.to || s.from)), prev = st.find(s => (s.to || s.from) === td && s !== now), next = st.find(s => s.from === td && s !== prev);
+  if (t <= b) { const st = (info.stops || []).filter(s => s.name && DAY_OK(s.from)), now = st.find(s => s.from <= td && td <= (s.to || s.from)), prev = st.find(s => (s.to || s.from) === td), next = st.find(s => s.from === td && s !== prev);   // Wechseltag: Abreise hier, Ankunft dort
     if (prev && next) return 'Heute: ' + prev.name + ' → ' + next.name;
     return (len > 1 ? 'Tag ' + (1 - days) + ' von ' + len : 'Heute') + (now ? ' · ' + now.name : ''); }
   return 'Schön war es'; }
@@ -940,7 +940,7 @@ function routeNow() {
   if (p[0] === 'mit') { const c = parseCarry(location.hash); if (c && c.length) takeCarry(c); return location.replace('#/'); }
   if (p[0] === 'neu') { if (!Wz) Wz = newWizard(); view = { n: 'new' }; }
   else if (p[0] === 'e' && p[1] && p[2]) { view = { n: 'join' }; startJoin(p[1], p[2]); }
-  else if (p[0] === 'r' && p[1]) { view = { n: SUB[p[2]] || 'trip' }; if (view.n !== 'edit' && view.n !== 'mood') Ed = null; openTrip(p[1]); }
+  else if (p[0] === 'r' && p[1]) { view = { n: (Object.hasOwn(SUB, p[2] || '') && SUB[p[2]]) || 'trip' }; if (view.n !== 'edit' && view.n !== 'mood') Ed = null; openTrip(p[1]); }
   else { view = { n: 'home' }; }
   if (!['trip', 'people', 'profile', 'mood', 'edit', 'info'].includes(view.n)) closeTrip();
   draw(true); scrollTo(0, keepY || 0); keepY = null; topTitle();
@@ -1057,8 +1057,13 @@ function showLink(url) { ask({ t: 'Einladungs-Link', m: url, ok: 'Fertig', one: 
 let psT = 0, psCtl = null;
 function placeHTML(key, val, ph) { const r = PS[key];
   return `<div class="pf"><input class="fi" data-pk="${esc(key)}" data-k="pk-${esc(key)}" autocomplete="off" autocapitalize="words" enterkeyhint="search" placeholder="${esc(ph)}" value="${esc(val)}"><div class="psug" data-ps="${esc(key)}">${r ? psList(key) : ''}</div></div>`; }
-function psList(key) { const r = PS[key]; if (!r) return ''; if (r.busy && !r.res.length) return '<div class="pz">Suche …</div>'; if (r.err) return '<div class="pz">Ortssuche gerade nicht erreichbar. Der Name wird trotzdem gespeichert.</div>';
-  if (!r.res.length) return r.q.length >= 3 ? '<div class="pz">Nichts gefunden. Der Name wird so gespeichert.</div>' : '';
+// Ziele (Assistent, Reise bearbeiten) entstehen nur durch Auswählen: ohne Treffer gibt es dort einen Eintrag „… hinzufügen“ (ohne Kartenpunkt)
+const MAXSTOPS = 8, MAXLEGS = 16, PSFREE = key => key === 'wstop' || key === 'estop';
+const psRes = (key, i) => { const r = PS[key]; return !r ? null : i === -1 ? (PSFREE(key) && r.q ? { name: r.q.slice(0, 60) } : null) : r.res[i] || null; };
+function psList(key) { const r = PS[key]; if (!r) return ''; if (r.busy && !r.res.length) return '<div class="pz">Suche …</div>';
+  const free = PSFREE(key) ? `<button type="button" data-pick="${esc(key)}" data-i="-1">${SY.plus}<span>„${esc(r.q)}“ hinzufügen<small>Ohne Kartenpunkt</small></span></button>` : '';
+  if (r.err) return `<div class="pz">Ortssuche gerade nicht erreichbar.${free ? '' : ' Der Name wird trotzdem gespeichert.'}</div>` + free;
+  if (!r.res.length) return r.q.length >= 3 ? `<div class="pz">Nichts gefunden.${free ? '' : ' Der Name wird so gespeichert.'}</div>` + free : '';
   return r.res.map((x, i) => `<button type="button" data-pick="${esc(key)}" data-i="${i}">${SY.pin}<span>${esc(x.name)}<small>${esc(x.sub)}</small></span></button>`).join(''); }
 function near() { const s = (T && stops().find(x => typeof x.lat === 'number')) || (Wz && Wz.stops.find(x => typeof x.lat === 'number')); return s ? `&lat=${s.lat}&lon=${s.lng}` : ''; }
 function placeSearch(key, q) { clearTimeout(psT); const r = PS[key] = PS[key] || { res: [] }; r.q = q.trim(); r.err = false;
@@ -1074,8 +1079,8 @@ function placeSearch(key, q) { clearTimeout(psT); const r = PS[key] = PS[key] ||
 function paintPs(key) { const el = document.querySelector(`#app [data-ps="${CSS.escape(key)}"]`); if (el) el.innerHTML = psList(key); }
 // Auswahl übernehmen: je Feld ein Ziel
 function pickPlace(key, x) { delete PS[key];
-  if (key === 'wstop') { Wz.stops.push({ id: rid(8), name: x.name, lat: x.lat, lng: x.lng }); Wz.q = ''; }
-  else if (key === 'estop') { Ed.d = { id: rid(8), name: x.name, lat: x.lat, lng: x.lng, from: '', to: '', stay: {} }; Ed.kind = 'stop'; Ed.isNew = true; Ed.open = Ed.d.id; Ed.derr = ''; Ed.q = ''; draw(true); openForm('#app .edw'); return; }
+  if (key === 'wstop') { if (Wz.stops.length < MAXSTOPS) Wz.stops.push({ id: rid(8), name: x.name, lat: x.lat, lng: x.lng }); Wz.q = ''; }
+  else if (key === 'estop') { if ((T.info.stops || []).length >= MAXSTOPS) return draw(true); Ed.d = { id: rid(8), name: x.name, lat: x.lat, lng: x.lng, from: '', to: '', stay: {} }; Ed.kind = 'stop'; Ed.isNew = true; Ed.open = Ed.d.id; Ed.derr = ''; Ed.q = ''; draw(true); openForm('#app .edw'); return; }
   else if (key === 'fplace' && F) { F.place = { name: x.name, lat: x.lat, lng: x.lng, addr: x.addr || '' }; F.pq = x.name; }
   else if (key.startsWith('stay-') && Ed && Ed.d) { Ed.d.stay = { ...(Ed.d.stay || {}), addr: [x.name, x.addr].filter(Boolean).join(', '), lat: x.lat, lng: x.lng }; }
   draw(true); }
@@ -1127,7 +1132,8 @@ function tabDot(k) { if (!T || T.st !== 'ok') return false;
 
 function draw(force) {
   if (!force && (inField() || slides)) { pending = true; return; }   // während jemand tippt, nichts neu aufbauen (iPhone würde die Tastatur schließen)
-  pending = false;
+  pending = false; drawnDay = today();
+  if (!F && !Cf && !Rv && !(Ed && Ed.d)) formY = null;   // kein Formular offen: gemerkte Scroll-Stelle verfällt (sonst sprang die Seite beim nächsten „Abbrechen“ dorthin)
   const A = $('app'), key = view.n + '|' + (view.n === 'new' ? Wz.step : '') + '|' + (T ? T.st : '') + '|' + (J ? J.st : ''), fresh = key !== lastKey; lastKey = key;
   const act = document.activeElement, fk = act && A.contains(act) && act.dataset.k, sel = fk && act.selectionStart != null ? [act.selectionStart, act.selectionEnd] : null;
   const inTrip = view.n === 'trip' && T && T.st === 'ok';
@@ -1158,6 +1164,9 @@ function draw(force) {
   if (inTrip) { mark(); dots(); watchSeen(); }
 }
 document.addEventListener('focusout', () => setTimeout(() => { if (pending && !inField()) draw(); }, 60));
+// App war über Nacht offen: beim Zurückkommen neu zeichnen, damit Countdown und „Heute“ stimmen
+let drawnDay = '';
+document.addEventListener('visibilitychange', () => { if (!document.hidden && drawnDay && drawnDay !== today()) draw(); });
 
 // Stand einer Reise für die Startseite: 'now' unterwegs, 'soon' noch vor ihr, 'past' vorbei, 'open' ohne Zeitraum
 function tripWhen(t) { if (!DAY_OK(t.from)) return { k: 'open', d: Infinity, txt: '' };
@@ -1209,7 +1218,7 @@ const kindChips = (cur, attr) => '<div class="ch">' + Object.entries(KIND).map((
 function wizHTML() { const w = Wz, s = WSTEPS[w.step], err = w.err ? `<p class="err">${esc(w.err)}</p>` : '', nx = (t = 'Weiter') => `<button class="btn lq" type="button" data-a="wnext">${t}<span class="gl"></span></button>`, sk = t => `<button class="btn g lq" type="button" data-a="wskip">${t}<span class="gl"></span></button>`, head = (t, sub) => `<div class="q">${stepsHTML(w.step)}<h1>${t}</h1><p class="sub">${sub}</p>`;
   if (s === 'name') return head('Wie heißt die Reise?', 'Ein Name, an dem alle sie erkennen.') + `<input class="fi" data-k="wn" data-f="name" maxlength="60" autocomplete="off" autocapitalize="sentences" enterkeyhint="next" placeholder="z. B. Kroatien 2027" value="${esc(w.name)}">${err}<div class="btns">${nx()}</div></div>`;
   if (s === 'when') return head('Wann ist die Reise?', 'Der Zeitraum lässt sich später ändern.') + `<div class="f2"><div><label class="fl" for="wf">Von</label><input class="fi" id="wf" data-k="wf" data-f="from" type="date" value="${esc(w.from)}"></div><div><label class="fl" for="wt">Bis</label><input class="fi" id="wt" data-k="wt" data-f="to" type="date" min="${esc(w.from)}" value="${esc(w.to)}"></div></div>${err}<div class="btns">${nx()}${sk('Steht noch nicht fest')}</div></div>`;
-  if (s === 'where') return head('Wohin geht es?', 'Ein Ziel oder mehrere, zum Beispiel für einen Roadtrip. Daraus kommen Wetter und Karte.') + `${placeHTML('wstop', w.q || '', w.stops.length ? 'Weiteres Ziel suchen' : 'Ort suchen, z. B. Split')}<div class="chipl">${w.stops.map(x => `<span class="chipx">${esc(x.name)}<button type="button" data-a="wstopx" data-sid="${esc(x.id)}" aria-label="${esc(x.name)} entfernen">${XS}</button></span>`).join('')}</div>${err}<div class="btns">${w.stops.length ? nx() : ''}${sk(w.stops.length ? 'Ohne weitere Ziele' : 'Später ergänzen')}</div></div>`;
+  if (s === 'where') return head('Wohin geht es?', 'Ein Ziel oder mehrere, zum Beispiel für einen Roadtrip. Daraus kommen Wetter und Karte.') + `${w.stops.length < MAXSTOPS ? placeHTML('wstop', w.q || '', w.stops.length ? 'Weiteres Ziel suchen' : 'Ort suchen, z. B. Split') : `<p class="hint">Mehr als ${MAXSTOPS} Ziele gehen nicht.</p>`}<div class="chipl">${w.stops.map(x => `<span class="chipx">${esc(x.name)}<button type="button" data-a="wstopx" data-sid="${esc(x.id)}" aria-label="${esc(x.name)} entfernen">${XS}</button></span>`).join('')}</div>${err}<div class="btns">${w.stops.length ? nx() : ''}${sk(w.stops.length ? 'Ohne weitere Ziele' : 'Später ergänzen')}</div></div>`;
   if (s === 'stay') return head('Wo ist die Unterkunft?', 'Unterkunft mit Link (z. B. Airbnb). Lässt sich später ergänzen.') + w.stops.map(x => `<div class="form" style="margin-bottom:10px">${w.stops.length > 1 ? `<h3>${esc(x.name)}</h3>` : ''}<label class="fl">Unterkunft</label><input class="fi" data-o="wst" data-sid="${esc(x.id)}" data-f="name" data-k="wsn-${esc(x.id)}" maxlength="80" placeholder="z. B. Villa Sole" value="${esc((x.stay || {}).name || '')}"><label class="fl">Link (wenn du magst)</label><input class="fi" data-o="wst" data-sid="${esc(x.id)}" data-f="link" data-k="wsl-${esc(x.id)}" inputmode="url" autocapitalize="off" placeholder="airbnb.de/…" value="${esc((x.stay || {}).link || '')}"></div>`).join('') + `${err}<div class="btns">${nx()}${sk('Später ergänzen')}</div></div>`;
   if (s === 'travel') return head('Wie ist die Anreise?', 'Details wie Flugnummern lassen sich später ergänzen.') + kindChips(w.travel, 'data-wkind') + `<label class="fl" for="wtn">Notiz (wenn du magst)</label><input class="fi" id="wtn" data-k="wtn" data-f="tnote" maxlength="200" placeholder="z. B. Flug LH 1234 am 10.7." value="${esc(w.tnote)}">${err}<div class="btns">${nx()}${sk('Später ergänzen')}</div></div>`;
   if (s === 'areas') return head('Was soll dabei sein?', 'Aktivitäten sind immer dabei. Der Rest lässt sich später umstellen.') + areasHTML(w.areas) + `<div class="btns">${nx()}</div></div>`;
@@ -1299,7 +1308,7 @@ function cardHTML(a, by) { const food = a.cat === 'food', ids = by[a.id] || [], 
     ${food && a.kind === 'cook' && !a.done && shopOn() ? shopBox(a) : ''}`;
   if (cms.length || open) h += `<div class="cmts${open ? ' open' : ''}"><button class="cmh" type="button" data-a="cm" aria-expanded="${open}"><span>${cms.length === 1 ? '1 Kommentar' : cms.length ? cms.length + ' Kommentare' : 'Kommentare'}${nCm && !open ? ` · <span style="color:var(--org)">${nCm} neu</span>` : ''}</span>${CHEV}</button>${open ? `<div class="cmb">${cms.map(([cid, c]) => `<div class="cm">${ava(P(c.by))}<p><b>${esc(nm(c.by))}</b><small>${esc(ago(c.ts || 0))}</small><br>${linkify(c.t)}</p>${c.by === T.me || isAdmin() ? `<button class="cmx" type="button" data-a="cmdel" data-c="${esc(cid)}" aria-label="Kommentar löschen">${SY.x}</button>` : ''}</div>`).join('')}
       <div class="cma"><textarea rows="1" data-k="cm-${esc(a.id)}" data-cmi maxlength="500" autocomplete="off" autocapitalize="sentences" enterkeyhint="send" placeholder="Kommentar schreiben" aria-label="Kommentar schreiben">${esc(cmDraft[a.id] || '')}</textarea><button type="button" data-a="cmsend" aria-label="Senden">${SY.send}</button></div></div>` : ''}</div>`;
-  h += `<div class="ft">${avs(sorted)}<span class="nm">${ids.length ? esc(names(sorted)) + (a.done ? (food ? '' : ' waren dabei') : '') : (food ? 'Noch keine Stimme' : 'Noch niemand dabei')}</span>
+  h += `<div class="ft">${avs(sorted)}<span class="nm">${ids.length ? esc(names(sorted)) + (a.done ? (food ? '' : ids.length > 1 ? ' waren dabei' : mine ? ' warst dabei' : ' war dabei') : '') : (food ? 'Noch keine Stimme' : 'Noch niemand dabei')}</span>
     ${a.done ? `<span class="dn">${SY.check}Erledigt</span>` : `<button class="go lq${mine ? ' in' : ''}" type="button" data-a="go" aria-pressed="${mine}">${food ? `${SY.thumb}<span>${ids.length}</span>` : mine ? `${SY.check}<span>Du bist dabei</span>` : `${SY.join}<span>Ich bin dabei</span>`}<span class="gl"></span></button>`}</div></div></article>`;
   return h; }
 
@@ -1308,7 +1317,8 @@ const SORTN = { new: 'Neueste', top: 'Beliebteste', date: 'Nach Datum' };
 // Reihenfolge der Vorschläge: selbst gewählt, sonst unterwegs nach Datum (heute oben), vorher Neueste bzw. beim Essen Beliebteste
 const sortOf = food => sortF[food ? 'food' : 'act'] || (onTrip() ? 'date' : food ? 'top' : 'new');
 function listHTML(food) { const by = sigBy(), st = stops();
-  let l = T.acts.filter(a => a.title && tabOf(a) === (food ? 'food' : 'act') && (!stopF || a.stop === stopF || !a.stop));
+  if (stopF && (st.length < 2 || !st.some(s => s.id === stopF))) stopF = '';   // gewähltes Ziel wurde entfernt: Filter zurück auf alle
+  let l = T.acts.filter(a => a.title && tabOf(a) === (food ? 'food' : 'act') && (!stopF || a.stop === stopF || !a.stop || !st.some(s => s.id === a.stop)));
   const open = l.filter(a => !a.done), done = l.filter(a => a.done);
   const votes = a => (by[a.id] || []).length, so = sortOf(food), td = today(), over = !!(T.info.to && T.info.to < td), rk = a => !a.day ? 1 : a.day >= td || over ? 0 : 2, tix = a => a.time ? TIMES.indexOf(a.time) : 9, byTop = (a, b) => votes(b) - votes(a) || (b.ts || 0) - (a.ts || 0);
   open.sort(so === 'date' ? (a, b) => rk(a) - rk(b) || (a.day || '').localeCompare(b.day || '') || tix(a) - tix(b) || (b.ts || 0) - (a.ts || 0) : so === 'top' ? byTop : (a, b) => (b.ts || 0) - (a.ts || 0));
@@ -1554,8 +1564,8 @@ function costForm() { const f = Cf, ppl = Object.entries(T.people).sort((a, b) =
 
 /* ---------- Mein Plan ---------- */
 function planHTML() { const by = sigBy(), days = tripDays(T.info), mineAct = a => (by[a.id] || []).includes(T.me);
-  const items = T.acts.filter(a => a.title && ((a.cat !== 'food' && mineAct(a)) || (a.cat === 'food' && (a.day || mineAct(a)))));
-  if (!items.length) return `<div class="card"><div class="empty"><b>Noch nichts geplant</b>Tipp bei Aktivitäten auf „Ich bin dabei“. Essen mit festem Tag erscheint hier automatisch.</div></div>`;
+  const items = T.acts.filter(a => a.title && ((a.cat !== 'food' && mineAct(a)) || (a.cat === 'food' && areas().food && (a.day || mineAct(a)))));   // Essen ausgeschaltet: auch hier nicht
+  if (!items.length) return `<div class="card"><div class="empty"><b>Noch nichts geplant</b>Tipp bei Aktivitäten auf „Ich bin dabei“.${areas().food ? ' Essen mit festem Tag erscheint hier automatisch.' : ''}</div></div>`;
   const open = items.filter(a => !a.done).length, done = items.length - open;
   const groups = {}; items.forEach(a => { const k = a.day || ''; (groups[k] = groups[k] || []).push(a); });
   const keys = Object.keys(groups).sort((a, b) => !a ? 1 : !b ? -1 : a.localeCompare(b));
@@ -1567,7 +1577,7 @@ function planHTML() { const by = sigBy(), days = tripDays(T.info), mineAct = a =
   if (pastK.length) h += `<button class="fold${planPast ? ' open' : ''}" type="button" data-a="pfold" aria-expanded="${planPast}" style="margin:0 0 18px"><span>Schon vorbei<small>${n}</small></span>${CHEV}</button>` + (planPast ? `<div class="ppast">${pastK.map(dayB).join('')}</div>` : '');
   h += keys.filter(k => !pastK.includes(k)).map(dayB).join('');
   return h; }
-function goToCard(id) { const a = T.acts.find(x => x.id === id); if (!a) return; const t = tabOf(a); if (a.done) dOpen[t] = true; foodView = 'sug'; stopF = '';
+function goToCard(id) { const a = T.acts.find(x => x.id === id); if (!a) return; const t = tabOf(a); if (!TABS.some(x => x[0] === t)) return; if (a.done) dOpen[t] = true; foodView = 'sug'; stopF = '';
   if (tab !== t) { tab = t; mark(); XL.t = idx() * tw; XR.t = XL.t + tw; kick(); } F = null; draw(true);
   const el = document.querySelector(`#app [data-id="${CSS.escape(id)}"]`); if (!el) return;
   el.scrollIntoView({ block: 'center', behavior: calm() ? 'auto' : 'smooth' }); el.classList.remove('hl'); void el.offsetWidth; el.classList.add('hl'); }
@@ -1605,11 +1615,11 @@ function editHTML() { if (!isAdmin()) return `<div class="hd"><h1>Reise</h1><p c
   h += `<p class="sec">Ziele und Unterkünfte</p>` + st.map((s0, i) => { const o = ed('stop', s0.id), s = o ? e.d : s0, y = s0.stay || {};
     return `<div class="form" data-stop="${esc(s0.id)}"><div class="shh"><h3>${esc(s0.name || 'Ziel')}</h3>${o ? '' : `<span style="display:flex;gap:4px">${i ? `<button class="cmx up" type="button" data-a="sup" aria-label="${esc(s0.name)} nach oben">${SV('<path d="M12 19V5M6 11l6-6 6 6"/>')}</button>` : ''}<button class="cmx" type="button" data-a="sdelst" aria-label="${esc(s0.name)} entfernen">${SY.x}</button></span>`}</div>
       ${o ? stopForm(s) : `<p class="inf" style="margin:0">${esc([s0.from ? shortRange(s0.from, s0.to) : '', y.name].filter(Boolean).join(' · ') || 'Zeitraum und Unterkunft offen')}${typeof s0.lat === 'number' ? '' : ' · ohne Kartenpunkt'}</p><button class="txb" type="button" data-a="sopen">Bearbeiten</button>`}</div>`; }).join('')
-    + (e.kind === 'stop' && e.isNew ? `<div class="form" data-stop="${esc(e.d.id)}"><div class="shh"><h3>${esc(e.d.name)}</h3></div>${stopForm(e.d)}</div>` : `<div class="form">${placeHTML('estop', e.q || '', st.length ? 'Weiteres Ziel suchen' : 'Ziel suchen, z. B. Split')}</div>`);
+    + (e.kind === 'stop' && e.isNew ? `<div class="form" data-stop="${esc(e.d.id)}"><div class="shh"><h3>${esc(e.d.name)}</h3></div>${stopForm(e.d)}</div>` : st.length < MAXSTOPS ? `<div class="form">${placeHTML('estop', e.q || '', st.length ? 'Weiteres Ziel suchen' : 'Ziel suchen, z. B. Split')}</div>` : `<p class="hint">Mehr als ${MAXSTOPS} Ziele gehen nicht.</p>`);
   h += `<p class="sec">Anreise und Fahrten</p>` + tr.map(x0 => { const o = ed('leg', x0.id), k = KIND[x0.kind] || KIND.auto, who = (x0.who || []).filter(id => T.people[id]);
     return `<div class="form" data-leg="${esc(x0.id)}"><div class="shh"><h3>${esc(x0.title || k[0])}</h3>${o ? '' : `<button class="cmx" type="button" data-a="ldel" aria-label="${esc(x0.title || k[0])} entfernen">${SY.x}</button>`}</div>
       ${o ? legForm(e.d) : `<p class="inf" style="margin:0">${esc([k[0], x0.from && x0.to ? x0.from + ' → ' + x0.to : x0.from || x0.to, x0.date ? dayName(x0.date) : '', x0.time, who.length ? who.length + (who.length === 1 ? ' Person' : ' Personen') : ''].filter(Boolean).join(' · '))}</p><button class="txb" type="button" data-a="lopen">Bearbeiten</button>`}</div>`; }).join('')
-    + (e.kind === 'leg' && e.isNew ? `<div class="form" data-leg="${esc(e.d.id)}"><div class="shh"><h3>Neue Fahrt</h3></div>${legForm(e.d)}</div>` : `<button class="btn g lq" type="button" data-a="ladd">${SY.plus}<span>Fahrt hinzufügen</span><span class="gl"></span></button>`);
+    + (e.kind === 'leg' && e.isNew ? `<div class="form" data-leg="${esc(e.d.id)}"><div class="shh"><h3>Neue Fahrt</h3></div>${legForm(e.d)}</div>` : tr.length < MAXLEGS ? `<button class="btn g lq" type="button" data-a="ladd">${SY.plus}<span>Fahrt hinzufügen</span><span class="gl"></span></button>` : `<p class="hint">Mehr als ${MAXLEGS} Fahrten gehen nicht.</p>`);
   h += `<p class="sec">Bereiche</p>${areasHTML(areas())}<p class="hint">Schalter wirken sofort für alle.</p>`;
   h += `<p class="sec">Mehr</p><div class="btns" style="margin-top:0"><button class="btn g lq" type="button" data-a="mood">Stimmung und Symbol<span class="gl"></span></button><button class="btn g lq" type="button" data-a="renew">Neuen Einladungs-Link erstellen<span class="gl"></span></button><button class="btn dz lq" type="button" data-a="leave">Von diesem Gerät entfernen<span class="gl"></span></button><button class="btn dz lq" type="button" data-a="tdel">Reise für alle löschen<span class="gl"></span></button></div>`;
   return h; }
@@ -1626,7 +1636,7 @@ $('app').addEventListener('input', e => { const el = e.target, f = el.dataset.f;
   if (el.dataset.k === 'paste') { pasteVal = el.value; return; }
   if (el.dataset.cmi != null) { cmDraft[el.closest('[data-id]').dataset.id] = el.value; growCm(el); return; }
   if (el.dataset.shi != null) { shopDraft[el.dataset.shi] = el.value; return; }
-  if (el.dataset.pk) { const k = el.dataset.pk; if (k === 'wstop') Wz.q = el.value; else if (k === 'estop') Ed.q = el.value; else if (k === 'fplace' && F) { F.pq = el.value; if (F.place && el.value.trim() !== F.place.name) F.place = el.value.trim() ? { name: el.value.trim() } : null; }
+  if (el.dataset.pk) { const k = el.dataset.pk; if (k === 'wstop') Wz.q = el.value; else if (k === 'estop') Ed.q = el.value; else if (k === 'fplace' && F) { F.pq = el.value; if (!F.place || el.value.trim() !== F.place.name) F.place = el.value.trim() ? { name: el.value.trim() } : null; }
     else if (k.startsWith('stay-') && Ed && Ed.d) { const y = Ed.d.stay = Ed.d.stay || {}; y.addr = el.value; delete y.lat; delete y.lng; }
     placeSearch(k, el.value); return; }
   if (!f) return; const o = objFor(el); if (!o) return;
@@ -1641,7 +1651,7 @@ const growCm = el => { el.style.height = 'auto'; el.style.height = Math.min(el.s
 $('app').addEventListener('keydown', e => { if (e.key !== 'Enter' || (e.target.tagName !== 'INPUT' && !(e.target.tagName === 'TEXTAREA' && e.target.dataset.cmi != null))) return; const el = e.target;
   if (el.dataset.cmi != null) { if (e.shiftKey) return; e.preventDefault(); sendCm(el.closest('[data-id]').dataset.id); }
   else if (el.dataset.shi != null) { e.preventDefault(); addShop(el.dataset.shi); }
-  else if (el.dataset.pk) { e.preventDefault(); const r = PS[el.dataset.pk]; if (r && r.res[0]) pickPlace(el.dataset.pk, r.res[0]); }
+  else if (el.dataset.pk) { e.preventDefault(); const r = PS[el.dataset.pk], x = r && !r.busy ? psRes(el.dataset.pk, 0) || (r.q.length >= 3 ? psRes(el.dataset.pk, -1) : null) : null; if (x) pickPlace(el.dataset.pk, x); }
   else if (view.n === 'new') { e.preventDefault(); WSTEPS[Wz.step] === 'who' ? createTrip() : wizNext(); }
   else if (view.n === 'join') { e.preventDefault(); submitJoin(); }
   else if (el.dataset.k === 'paste') { e.preventDefault(); pasteGo(); } });
@@ -1652,12 +1662,12 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) for (
 function wizNext() { const w = Wz, s = WSTEPS[w.step]; w.err = '';
   if (s === 'name' && !w.name.trim()) { w.err = 'Bitte gib der Reise einen Namen.'; return draw(true); }
   if (s === 'when') { if (!w.from) { w.err = 'Bitte wähle den ersten Tag, oder tippe auf „Steht noch nicht fest“.'; return draw(true); } if (w.to && w.to < w.from) { w.err = 'Das Ende liegt vor dem Anfang.'; return draw(true); } }
-  if (s === 'where' && (w.q || '').trim() && !w.stops.length) { w.stops.push({ id: rid(8), name: w.q.trim() }); w.q = ''; }
+  if (s === 'where' && (w.q || '').trim()) { if (w.stops.length < MAXSTOPS && !w.stops.some(x => norm(x.name) === norm(w.q))) w.stops.push({ id: rid(8), name: w.q.trim().slice(0, 60) }); w.q = ''; delete PS.wstop; }   // Getipptes ohne Auswahl zählt als Ziel (vorher ging es bei weiteren Zielen still verloren)
   if (s === 'stay') for (const x of w.stops) if (x.stay && x.stay.link && normLink(x.stay.link) === false) { w.err = `Der Link bei „${x.name}“ sieht nicht wie eine Internetadresse aus.`; return draw(true); }
   navTo('push', () => { w.step++; if (WSTEPS[w.step] === 'stay' && !w.stops.length) w.step++; draw(true); scrollTo(0, 0); }); }
 function wizSkip() { const w = Wz, s = WSTEPS[w.step]; w.err = '';
   if (s === 'when') { w.from = w.to = ''; } if (s === 'stay') w.stops.forEach(x => delete x.stay); if (s === 'travel') { w.travel = ''; w.tnote = ''; }
-  if (s === 'where' && (w.q || '').trim()) { w.stops.push({ id: rid(8), name: w.q.trim() }); w.q = ''; }
+  if (s === 'where' && (w.q || '').trim()) { if (w.stops.length < MAXSTOPS && !w.stops.some(x => norm(x.name) === norm(w.q))) w.stops.push({ id: rid(8), name: w.q.trim().slice(0, 60) }); w.q = ''; delete PS.wstop; }
   navTo('push', () => { w.step++; if (WSTEPS[w.step] === 'stay' && !w.stops.length) w.step++; draw(true); scrollTo(0, 0); }); }
 function pasteGo() { const c = parseCarry(pasteVal); if (c && c.length) { pasteOpen = false; pasteVal = ''; pasteErr = ''; takeCarry(c); return draw(true); }
   const p = parseInvite(pasteVal); if (!p) { pasteOpen = true; pasteErr = pasteVal.trim() ? 'Das ist kein Einladungs-Link von outbndr.' : 'Bitte füg den Einladungs-Link ein.'; return draw(true); } pasteOpen = false; pasteVal = ''; pasteErr = ''; go('#/e/' + p.t + '/' + p.tok); }
@@ -1671,9 +1681,9 @@ $('app').addEventListener('pointerdown', e => { const p = e.target.closest('[dat
 $('app').addEventListener('pointermove', e => { if (pk && Math.hypot(e.clientX - pk.x, e.clientY - pk.y) > 8) pk = null; });
 $('app').addEventListener('pointercancel', () => { pk = null; });
 addEventListener('scroll', () => { if (pk && Math.abs(scrollY - pk.sy) > 4) pk = null; }, { passive: true });
-$('app').addEventListener('pointerup', e => { if (!pk) return; const p = pk; pk = null; if (Math.abs(scrollY - p.sy) > 4) return; const el = e.target.closest('[data-pick]'); if (!el || el.dataset.pick !== p.key || +el.dataset.i !== p.i) return; const r = PS[p.key]; if (r && r.res[p.i]) pickPlace(p.key, r.res[p.i]); });
+$('app').addEventListener('pointerup', e => { if (!pk) return; const p = pk; pk = null; if (Math.abs(scrollY - p.sy) > 4) return; const el = e.target.closest('[data-pick]'); if (!el || el.dataset.pick !== p.key || +el.dataset.i !== p.i) return; const x = psRes(p.key, p.i); if (x) pickPlace(p.key, x); });
 $('app').addEventListener('click', async e => {
-  const pkb = e.target.closest('[data-pick]'); if (pkb) { if (e.detail === 0) { const r = PS[pkb.dataset.pick]; if (r && r.res[+pkb.dataset.i]) pickPlace(pkb.dataset.pick, r.res[+pkb.dataset.i]); } return; }
+  const pkb = e.target.closest('[data-pick]'); if (pkb) { if (e.detail === 0) { const x = psRes(pkb.dataset.pick, +pkb.dataset.i); if (x) pickPlace(pkb.dataset.pick, x); } return; }
   const colB = e.target.closest('[data-col]'); if (colB) { const o = view.n === 'new' ? Wz : view.n === 'join' ? J : Pf; if (o && !colB.disabled) { o.col = colB.dataset.col; draw(true); } return; }
   const ic = e.target.closest('[data-icon]'); if (ic) { if (view.n === 'new') { Wz.icon = ic.dataset.icon; draw(true); } else if (view.n === 'mood' && T && T.st === 'ok') { if (!isAdmin()) return; try { await updateDoc(tdoc(T.id), { icon: ic.dataset.icon }); } catch (err) { console.error(err); toast(denied(err) ? 'Dafür müssen erst die neuen Regeln in Firebase sein.' : FAIL); } } return; }
   const mo = e.target.closest('[data-mood]'); if (mo) { if (view.n === 'new') { Wz.mood = mo.dataset.mood; draw(true); } else if (view.n === 'mood' && T && T.st === 'ok') { if (!isAdmin()) return; try { await updateDoc(tdoc(T.id), { mood: mo.dataset.mood }); } catch (err) { console.error(err); toast(FAIL); } } return; }
@@ -1860,9 +1870,12 @@ async function saveRes() { const r = Rv; if (!r) return; const p = parseInt(r.p,
   const t = T; try { await updateDoc(tdoc(t.id, 'acts', r.id), { res: { t: r.t || '', p: p > 0 ? p : 0 } }); toast('Gespeichert'); } catch (e) { console.error(e); toast(FAIL); if (T === t && !Rv) { Rv = r; draw(true); } } }   // Getipptes kommt zurück
 async function saveProfile() { const name = Pf.name.trim(); Pf.err = ''; if (!name) { Pf.err = 'Bitte gib deinen Namen ein.'; return draw(true); }
   if (Object.entries(T.people).some(([id, p]) => id !== T.me && norm(p.name) === norm(name))) { Pf.err = 'Den Namen gibt es in dieser Reise schon.'; return draw(true); }
+  if (offline()) { Pf.err = OFFLINE; return draw(true); }
   try { await updateDoc(tdoc(T.id, 'people', T.me), { name, col: Pf.col }); Pf.name = name; toast('Gespeichert'); draw(true); } catch (e) { console.error(e); Pf.err = FAIL; draw(true); } }
 async function savePin() { Pf.perr = ''; if (!PIN_OK(Pf.pin)) { Pf.perr = 'Die PIN braucht 4 bis 8 Ziffern.'; return draw(true); } if (Pf.pin !== Pf.pin2) { Pf.perr = 'Die beiden PINs sind nicht gleich.'; return draw(true); }
-  try { const ph = await hash(T.id, T.me, Pf.pin), b = writeBatch(db); b.set(tdoc(T.id, 'people', T.me, 'priv', 'pin'), { ph }); b.update(tdoc(T.id, 'members', uid), { ph }); await b.commit();
+  if (offline()) { Pf.perr = OFFLINE; return draw(true); }
+  try { const ph = await hash(T.id, T.me, Pf.pin), m = await getDoc(tdoc(T.id, 'members', uid));
+    if (!(m.exists() && m.data().ph === ph)) { const b = writeBatch(db); b.set(tdoc(T.id, 'people', T.me, 'priv', 'pin'), { ph }); b.update(tdoc(T.id, 'members', uid), { ph }); await b.commit(); }   // dieselbe PIN wie bisher: nichts zu ändern (die Regeln lehnten das nach „Neuer Link“ ab)
     Pf.pin = Pf.pin2 = ''; Pf.perr = ''; toast('Neue PIN gespeichert'); draw(true); } catch (e) { console.error(e); Pf.perr = FAIL; draw(true); } }
 
 /* ---------- Einkaufsliste speichern ---------- */
@@ -1920,6 +1933,7 @@ async function tickPay(from, to, amt) { const t = T;
 /* ---------- Reise bearbeiten, Link erneuern, verlassen, löschen ---------- */
 const ndirty = () => !!(Ed && T && T.info && (Ed.name !== T.info.name || Ed.from !== (T.info.from || '') || Ed.to !== (T.info.to || '')));
 async function saveNameDates() { const e = Ed, name = e.name.trim(); e.err = '';
+  if (offline()) { e.err = OFFLINE; return draw(true); }
   if (!name) { e.err = 'Bitte gib der Reise einen Namen.'; return draw(true); }
   if (e.to && e.from && e.to < e.from) { e.err = 'Das Ende liegt vor dem Anfang.'; return draw(true); }
   // Wird der Zeitraum kleiner: nachfragen, wenn Ziele, Vorschläge oder Fahrten danach außerhalb liegen (Wunsch Lars 13.11.2026)
@@ -1932,6 +1946,7 @@ async function saveNameDates() { const e = Ed, name = e.name.trim(); e.err = '';
   try { await updateDoc(tdoc(T.id), { name: name.slice(0, 60), from: e.from, to: e.from ? (e.to || e.from) : '' }); Object.assign(e, { name: name.slice(0, 60), to: e.from ? (e.to || e.from) : '' }); toast('Gespeichert'); draw(true); }
   catch (err) { console.error(err); e.err = FAIL; draw(true); } }
 async function saveDraft() { const e = Ed, d = e.d; if (!d) return; e.derr = ''; const tf = T.info.from || '', tt = T.info.to || '';
+  if (offline()) { e.derr = OFFLINE; return draw(true); }   // ohne Netz bliebe das Formular ohne Rückmeldung offen
   if (e.kind === 'stop') { const y = d.stay || {};
     if (d.from && d.to && d.to < d.from) e.derr = 'Die Abreise liegt vor der Ankunft.';
     else if (tf && d.from && d.from < tf || tt && d.to && d.to > tt || tt && d.from && d.from > tt || tf && d.to && d.to < tf) e.derr = `Bitte innerhalb des Reisezeitraums bleiben (${shortRange(tf, tt || tf)}).`;

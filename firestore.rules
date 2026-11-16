@@ -1,4 +1,5 @@
 rules_version = '2';
+// Fassung v6 (16.11.2026): Eine Person anlegen kann nur ein Gerät, dessen Einladungs-Link noch gilt (Entfernte konnten sich sonst nach „Neuer Link“ mit eigenem Programm selbst wieder anlegen)
 // Fassung v5 (13.11.2026): Reise darf ein eigenes Symbol haben (Feld icon)
 // Fassung v4 (13.11.2026): Beim Löschen der ganzen Reise darf der Admin auch die eigene Person mitlöschen (sonst blieb der Name liegen)
 // Fassung v3 (12.11.2026): Reise und Mitreisende nur noch für Beigetretene lesbar, IDs und Kartenpunkte geprüft
@@ -92,6 +93,7 @@ service cloud.firestore {
         allow read: if isIn() || joining();
         // neue Person: nur zusammen mit dem eigenen Gerät; Admin wird man nur beim Anlegen der Reise
         allow create: if signedIn() && okId(pid) && getAfter(mpath()).data.pid == pid && personOk(request.resource.data)
+          && existsAfter(/databases/$(db)/documents/trips/$(t)/invites/$(getAfter(mpath()).data.inv))
           && (request.resource.data.get('admin', false) == false || founding());
         // eigenes Profil ändern (nicht das Admin-Recht); Admins dürfen bei anderen nur das Admin-Recht ändern
         allow update: if isIn() && personOk(request.resource.data) && (
