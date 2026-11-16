@@ -1838,8 +1838,8 @@ function flipPlay(m, skip) { if (!m) return; const D = 360, y = 0, vh = innerHei
     else if (L && e.dataset.id !== skip && near(top)) { e.animate([{ opacity: 0, transform: 'scale(.97)' }, { opacity: 1, transform: 'none' }], { duration: D, easing: MO.on }); n++; } }
   // Verschwundene Kacheln blenden an ihrer alten Stelle aus (die alte Kachel selbst, keine Kopie)
   for (const [k, o] of m) { if (seen.has(k) || !o.list || !near(o.top)) continue; const L = lists[o.list] || lists.l; if (!L) continue; const g = o.node, lr = L.getBoundingClientRect();
-    g.querySelectorAll('[id]').forEach(x => x.removeAttribute('id')); g.removeAttribute('data-id'); g.removeAttribute('data-seen'); g.setAttribute('aria-hidden', 'true'); g.inert = true; L.style.position = 'relative';
-    Object.assign(g.style, { position: 'absolute', left: (o.left - lr.left) + 'px', top: (o.top - y - lr.top) + 'px', width: o.w + 'px', margin: 0, pointerEvents: 'none', zIndex: 0 }); L.append(g); n++;
+    g.querySelectorAll('[id]').forEach(x => x.removeAttribute('id')); g.removeAttribute('data-id'); g.removeAttribute('data-seen'); g.setAttribute('aria-hidden', 'true'); g.inert = true; L.style.position = 'relative'; L.style.isolation = 'isolate';   // eigene Ebene, damit die ausblendende Kachel unter den anderen liegt (schien sonst kurz durch die nachrückende Kachel)
+    Object.assign(g.style, { position: 'absolute', left: (o.left - lr.left) + 'px', top: (o.top - y - lr.top) + 'px', width: o.w + 'px', margin: 0, pointerEvents: 'none', zIndex: -1 }); L.append(g); n++;
     g.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(.97)' }], { duration: D * .7, easing: MO.on, fill: 'forwards' }).finished.then(() => g.remove(), () => g.remove()); }
   if (n) { slides++; setTimeout(slideDone, D + 40); } }   // solange etwas gleitet, warten weitere Live-Daten
 function segSwitch(btn, apply, flip) { const s = btn.closest('.seg2'), key = s.dataset.seg, ind = s.querySelector('.ind2'), old = { w: ind.style.width, x: ind.style.translate }, sn = flip ? flipSnap() : null;
