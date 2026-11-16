@@ -299,14 +299,14 @@ main.rcl.mst{animation:none}
 .toast.un{pointer-events:auto;display:flex;align-items:center;gap:14px;padding:6px 8px 6px 18px}.toast.un button{min-height:36px;padding:0 14px;border-radius:999px;background:var(--btn);color:var(--ac);font-size:15px;font-weight:600}
 @keyframes tin{from{opacity:0;transform:translateY(10px) scale(.95)}}
 .dlg{position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--dim);animation:dIn .2s ease-out}
-.dlgb{width:min(300px,100%);padding:22px 18px 16px;border-radius:30px;color:var(--tx);background:var(--dlg);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);box-shadow:var(--mrim),0 20px 60px rgba(0,0,0,.3);animation:dPop .3s var(--spr,cubic-bezier(.3,1.3,.5,1))}
+.dlgb{width:min(300px,100%);padding:22px 18px 16px;border-radius:30px;color:var(--tx);background:var(--dlg);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);box-shadow:var(--mrim),0 20px 60px rgba(0,0,0,.3);animation:dPop .26s cubic-bezier(.32,.72,0,1)}
 .dlgb b{display:block;font-size:17px;font-weight:600;line-height:1.29;margin:0 4px 4px}
 .dlgb p{margin:0 4px;font-size:15px;line-height:1.33}
 .dlgf{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.dlgf.one{grid-template-columns:1fr}
 .dlgf button{min-height:48px;border-radius:999px;font-size:17px;font-weight:600;background:var(--btn);color:var(--tx)}
 .dlgf .y{background:var(--acb);color:#fff}.dlgf .y.dz{background:var(--mrdb,var(--mrd));color:#fff}
 .dlg.out{animation:dOut .18s ease-in forwards}
-@keyframes dIn{from{opacity:0}}@keyframes dOut{to{opacity:0}}@keyframes dPop{from{opacity:0;transform:scale(.9)}}
+@keyframes dIn{from{opacity:0}}@keyframes dOut{to{opacity:0}}@keyframes dPop{from{opacity:0;transform:scale(1.18)}}.dlg.out .dlgb{animation:dPopOut .16s ease-in forwards}@keyframes dPopOut{to{opacity:0;transform:scale(1.12)}}
 .fade{animation:fd .3s cubic-bezier(.32,.72,0,1)}@keyframes fd{from{opacity:0}}
 /* Platzhalter beim Laden */
 /* ===== Laden: Startbildschirm mit Schriftzug, Platzhalter in Form der echten Inhalte, Hinweis bei langsamer Verbindung ===== */

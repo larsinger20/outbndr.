@@ -56,6 +56,7 @@ Stand: 10.11.2026. **Vorlage mit allen Mustern zum Abschauen: `vorlagen/glas-pro
   - Umschalter (Reise-Info, Essen): Perle gleitet 0,42 s mit Feder von der alten Stelle, der Inhalt darunter blendet in 0,22 s ein.
   - Während einer Bewegung warten Live-Daten anderer (`slides`), damit nichts abreißt.
 - **Nichts springt** (16.11.2026): Ändert sich eine Liste (Daumen, Löschen, Rückgängig, Erledigt, Neues von anderen), gleiten die Kacheln 0,36 s an ihren Platz, Neues blendet ein, Verschwundenes blendet an alter Stelle aus. Beim Reiterwechsel bleibt der Kopf stehen, nur der Inhalt blendet ein. Schalter gleiten wie in iOS. Zustände nie hart austauschen, wenn das Element sichtbar bleibt.
+- **Nachfrage-Fenster** (gemessen am Home-Bildschirm „App entfernen“, Aufnahme Lars 16.11.2026, 60 Bilder/s): erscheint etwas zu groß und durchsichtig (ca. 1,15–1,2-fach) und zieht sich in ca. 0,25 s auf seine Größe zusammen, **ohne Nachfedern**; beim Schließen wächst es wieder leicht (ca. 1,1-fach) und blendet in ca. 0,15 s aus. Im Code `dPop` (1,18 → 1, 0,26 s, iOS-Kurve) und `dPopOut` (1 → 1,12, 0,16 s). Vorher poppte es von 0,9 mit Nachfedern auf und blendete nur aus.
 - **Filter** sind Umschalter (Segmented Control) wie in iOS, keine losen Pillen; erst ab 5 Einträgen eine wischbare Pillen-Zeile. Ändert sich eine Liste (Filter), gleiten die Kacheln an ihre neue Stelle, nichts springt.
 - **Antippen statt Berühren** bei Auswahllisten (Ortsvorschläge): Übernommen wird erst beim Loslassen ohne Bewegung und ohne Scrollen (Lars: Scrollen übernahm sonst einen Vorschlag).
 
