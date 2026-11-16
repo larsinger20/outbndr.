@@ -275,13 +275,19 @@ html.noglow .lq>.gl{transition:none!important;opacity:0!important}.navrow>.gl,.r
 main.rcl{position:absolute;margin:0;min-height:0;pointer-events:none}
 .mrb.t{left:0;right:0;top:0;height:10px}.mrb.b{left:0;right:0;bottom:0;height:10px}.mrb.l{left:0;top:0;bottom:0;width:12px}.mrb.r{right:0;top:0;bottom:0;width:12px}
 .mrb::after{background:var(--mg)}
+/* Ecken (Bildschirmfoto Lars 17.11.2026: Glas stand in den Ecken eckig über die Rundung): Safari schneidet Weichzeichnung in Unterelementen nicht an der Rundung des Menüs ab. Darum sind die Streifen selbst rund: Hülle mit clip-path, und die Weichzeichnung jedes Streifens hat die Eck-Rundung als eigene Form. Feste 30 px (Rundung des fertigen Menüs): je Bild mitgeführt bremste das Öffnen. */
+.rbw{position:absolute;inset:0;border-radius:inherit;overflow:hidden;clip-path:inset(0 round var(--mr,30px));pointer-events:none}
+.mrb.t::after{bottom:auto;height:calc(var(--mr,30px)*2);border-radius:var(--mr,30px) var(--mr,30px) 0 0}
+.mrb.b::after{top:auto;height:calc(var(--mr,30px)*2);border-radius:0 0 var(--mr,30px) var(--mr,30px)}
+.mrb.l::after{right:auto;width:calc(var(--mr,30px)*2);border-radius:var(--mr,30px) 0 0 var(--mr,30px)}
+.mrb.r::after{left:auto;width:calc(var(--mr,30px)*2);border-radius:0 var(--mr,30px) var(--mr,30px) 0}
 main.rcl.mst{animation:none}
 
 /* ⋯-Menü: der Knopf wächst zum Glas-Menü (aus der Vorlage) */
 .catch{position:fixed;inset:0;z-index:30;touch-action:none}
 .mn{position:fixed;z-index:31;overflow:hidden;touch-action:none;-webkit-backdrop-filter:blur(22px) saturate(190%);backdrop-filter:blur(22px) saturate(190%);will-change:left,top,width,height}
 .mn::after{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;opacity:.7;background:linear-gradient(140deg,var(--rim),rgba(255,255,255,0) 30%,rgba(255,255,255,0) 72%,var(--rim));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
-.mn::before{content:'';position:absolute;inset:0;background:var(--mg)}
+.mn::before{content:'';position:absolute;inset:0;border-radius:inherit;background:var(--mg)}
 .mn .mi{position:absolute;right:0;width:250px;padding:8px 0;transform-origin:100% 0}
 .mn .mi.up{transform-origin:100% 100%}.mn .mi.lf{right:auto;left:0;transform-origin:0 0}.mn .mi.lf.up{transform-origin:0 100%}
 .mn .grp+.grp{margin-top:8px;padding-top:8px;background:linear-gradient(var(--mdiv),var(--mdiv)) 16px 0/calc(100% - 39px) 1px no-repeat}
@@ -2249,10 +2255,10 @@ function lightClone(src) { const c = src.cloneNode(false), vh = innerHeight, vis
   for (const ch of src.children) { if (!vis(ch)) { c.append(gap(ch)); continue; }
     if (ch.classList.contains('list')) { const l = ch.cloneNode(false); for (const k of ch.children) l.append(vis(k) ? k.cloneNode(true) : gap(k, true)); c.append(l); } else c.append(ch.cloneNode(true)); }
   return c; }
-function menuBands(M) { const src = $('app'), r = src.getBoundingClientRect(), lc = lightClone(src); M.mr = { l: r.left, t: r.top }; M.rb = [];
+function menuBands(M) { const src = $('app'), r = src.getBoundingClientRect(), lc = lightClone(src); M.mr = { l: r.left, t: r.top }; M.rb = []; const wrap = document.createElement('div'); wrap.className = 'rbw'; M.m.insertBefore(wrap, M.inn);
   for (const k of ['t', 'b', 'l', 'r']) { const b = document.createElement('div'), sc = document.createElement('div'), c = lc.cloneNode(true);
     b.className = 'rb mrb ' + k; sc.className = 'rs'; c.removeAttribute('id'); c.querySelectorAll('[id]').forEach(e => e.removeAttribute('id')); c.classList.remove('fade'); c.classList.add('rcl', 'mst'); c.setAttribute('aria-hidden', 'true'); c.inert = true; c.style.width = src.offsetWidth + 'px';
-    sc.append(c); b.append(sc); M.m.insertBefore(b, M.inn); M.rb.push({ k, c }); } }
+    sc.append(c); b.append(sc); wrap.append(b); M.rb.push({ k, c }); } }
 function closeMenu(then) { const M = menu; if (!M || M.closing) return; M.c.remove();
   M.m.style.pointerEvents = 'none'; M.closing = true; cancelAnimationFrame(mraf); mraf = 0;
   const up = M.inn.classList.contains('up'); M.m.style.transformOrigin = '100% ' + (up ? '100%' : '0%');
