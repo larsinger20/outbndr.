@@ -542,14 +542,13 @@ main.wash .mapb{background:var(--card)}
 .mpin svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .mpin.done{opacity:.55}
 .mpin.home{--c:#1c1c1e}
-.leaflet-popup-content-wrapper{border-radius:20px!important;background:var(--card)!important;color:var(--tx)!important;box-shadow:0 10px 30px rgba(0,0,0,.25)!important}
-.leaflet-popup-tip{background:var(--card)!important}
-.leaflet-popup-content{margin:14px 16px!important;font:15px/1.33 var(--font)!important;min-width:200px}
-.leaflet-popup-content b{display:block;font-size:17px;font-weight:600;margin-bottom:2px}
-.leaflet-popup-content .mpb{display:flex;gap:8px;margin-top:10px}
-.leaflet-popup-content .mpb a,.leaflet-popup-content .mpb button{flex:1;min-height:36px;border-radius:999px;background:var(--btn);color:var(--ac)!important;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;text-decoration:none}
-.leaflet-container{background:var(--bg)!important;font-family:var(--font)!important}
-.leaflet-control-attribution{font-size:10px!important;background:rgba(255,255,255,.6)!important}
+.gpin{position:absolute;transform:translate(-50%,-50%);cursor:pointer}
+.gpin::after{content:'';position:absolute;inset:-7px}   /* Tippfläche 44 */
+.gpop{position:absolute;width:min(280px,calc(100vw - 32px));transform:translate(-50%,calc(-100% - 24px));padding:14px 16px;border-radius:20px;background:var(--card);color:var(--tx);box-shadow:0 10px 30px rgba(0,0,0,.25);font:15px/1.33 var(--font);cursor:default}
+.gpop::after{content:'';position:absolute;left:50%;bottom:-7px;width:14px;height:14px;background:var(--card);transform:translateX(-50%) rotate(45deg);border-radius:2px}
+.gpop b{display:block;font-size:17px;font-weight:600;margin-bottom:2px}
+.gpop .mpb{display:flex;gap:8px;margin-top:10px}
+.gpop .mpb a,.gpop .mpb button{flex:1;min-height:44px;border-radius:999px;background:var(--btn);color:var(--ac);font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;text-decoration:none;white-space:nowrap;padding:0 12px}
 .mnone{position:absolute;z-index:500;left:16px;right:16px;bottom:calc(20px + env(safe-area-inset-bottom,0px));padding:12px 16px;border-radius:20px;background:var(--gb);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:var(--gbsh);font-size:15px;text-align:center}
 /* Hinweis auf neue Version */
 .upd{position:fixed;z-index:60;left:50%;translate:-50% 0;top:calc(10px + env(safe-area-inset-top,0px));padding:11px 18px;border-radius:999px;font-size:15px;font-weight:600;color:var(--tx);background:var(--mg);-webkit-backdrop-filter:blur(20px) saturate(200%);backdrop-filter:blur(20px) saturate(200%);box-shadow:inset 0 0 0 .5px var(--lgbd),inset 0 1px 0 var(--lghi),0 8px 24px rgba(0,0,0,.16);width:max-content;max-width:calc(100% - 120px);animation:tin .35s cubic-bezier(.3,1.3,.5,1)}
@@ -2098,40 +2097,66 @@ function menuFor(btn) { const k = btn.dataset.menu;
           if (await ask({ t: `${p.name} ist entfernt`, m: 'Mit dem bisherigen Einladungs-Link könnte die Person wieder beitreten. Neuen Link erstellen? Alle anderen bleiben dabei.', ok: 'Neuer Link', no: 'Nicht jetzt' })) renewLink(true); } catch (e) { console.error(e); toast(FAIL); } }, 'dg']]]; }
   return null; }
 
-/* ---------- Karte (OpenStreetMap über Leaflet, ohne Schlüssel) ---------- */
-let MAP = null, mapF = 'all', mapLayer = null, mapBtn = null, leafletP = null;
-function loadLeaflet() { if (window.L) return Promise.resolve(); if (leafletP) return leafletP;
-  leafletP = new Promise((res, rej) => { const c = document.createElement('link'); c.rel = 'stylesheet'; c.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'; c.integrity = 'sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw=='; c.crossOrigin = 'anonymous'; document.head.append(c);
-    const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'; s.integrity = 'sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g=='; s.crossOrigin = 'anonymous'; s.onload = res; s.onerror = () => { leafletP = null; rej(); }; document.head.append(s); });
-  return leafletP; }
+/* ---------- Karte (Google Maps, Wunsch Lars 17.11.2026; vorher Leaflet + CARTO, die seit Nov. 2026 einen Schlüssel verlangen) ----------
+   Schlüssel aus Lars' Google-Cloud-Projekt; er ist in der Seite sichtbar und darum bei Google auf larsinger20.github.io und die Maps JavaScript API beschränkt.
+   Pins und Info-Kachel sind eigene HTML-Ebenen (OverlayView), damit sie wie die übrige App aussehen und keine Map-ID nötig ist. */
+const GMAPS_KEY = '';
+let MAP = null, mapF = 'all', mapLayer = [], mapBtn = null, gmP = null, mapPop = null, GPin = null, mapErrd = false;
+// Dunkle Karte ohne Map-ID (Stil nach Googles Vorlage „Night“, ruhiger)
+const GDARK = [{ elementType: 'geometry', stylers: [{ color: '#1d1f22' }] }, { elementType: 'labels.text.stroke', stylers: [{ color: '#1d1f22' }] }, { elementType: 'labels.text.fill', stylers: [{ color: '#8e9095' }] },
+  { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#c7c8cc' }] }, { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#8e9095' }] },
+  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#1f2b24' }] }, { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#33363b' }] },
+  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#202226' }] }, { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#4a4d53' }] },
+  { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#2a2c30' }] }, { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0e1a26' }] }, { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#4f6a85' }] }];
+function loadGmaps() { if (window.google && google.maps && google.maps.OverlayView) return Promise.resolve(); if (gmP) return gmP;
+  gmP = new Promise((res, rej) => { const to = setTimeout(() => { gmP = null; rej(new Error('Zeitüberschreitung')); }, 15000);
+    window.__gmReady = async () => { try { await google.maps.importLibrary('maps'); clearTimeout(to); res(); } catch (e) { clearTimeout(to); gmP = null; rej(e); } };
+    window.gm_authFailure = () => { mapErrd = true; mapErr(); };   // Schlüssel falsch oder nicht für diese Seite freigegeben
+    const s = document.createElement('script'); s.async = true; s.src = 'https://maps.googleapis.com/maps/api/js?' + (GMAPS_KEY ? 'key=' + encodeURIComponent(GMAPS_KEY) + '&' : '') + 'v=weekly&language=de&region=DE&loading=async&callback=__gmReady';
+    s.onerror = () => { clearTimeout(to); gmP = null; rej(new Error('Laden fehlgeschlagen')); }; document.head.append(s); });
+  return gmP; }
+function mapErr() { $('mload')?.remove(); const n = $('mnote'); n.hidden = false; n.textContent = 'Die Karte lädt gerade nicht. Bitte später nochmal versuchen.'; }
+// HTML an einem Punkt der Karte (Pin oder Info-Kachel)
+function gpinClass() { return class extends google.maps.OverlayView {
+  constructor(pos, html, cls, z, tap) { super(); this.pos = pos; this.html = html; this.cls = cls; this.z = z; this.tap = tap; }
+  onAdd() { const d = this.div = document.createElement('div'); d.className = this.cls; d.style.zIndex = this.z; d.innerHTML = this.html;
+    if (this.tap) d.addEventListener('click', e => { e.stopPropagation(); this.tap(); }); else google.maps.OverlayView.preventMapHitsAndGesturesFrom(d);
+    this.getPanes()[this.tap ? 'overlayMouseTarget' : 'floatPane'].append(d); }
+  draw() { const p = this.getProjection().fromLatLngToDivPixel(this.pos); if (p) { this.div.style.left = p.x + 'px'; this.div.style.top = p.y + 'px'; } }
+  onRemove() { this.div.remove(); } }; }
+function closePop() { if (mapPop) { mapPop.setMap(null); mapPop = null; } }
+function openPop(pos, html) { closePop(); mapPop = new GPin(pos, html, 'gpop', 1000, null); mapPop.setMap(MAP); MAP.panTo(pos); }
 async function openMap(btn) { mapBtn = btn; mapF = tab === 'food' ? 'food' : tab === 'plan' ? 'mine' : 'all';
   const v = $('mapv'), r = btn.getBoundingClientRect(); v.style.setProperty('--mx', (r.left + r.width / 2) + 'px'); v.style.setProperty('--my', (r.top + r.height / 2) + 'px');
   v.hidden = false; history.pushState({ map: 1 }, ''); paintMapBar();
   if (!calm()) { v.animate([{ transform: 'scale(.12)', opacity: 0, borderRadius: '40px' }, { transform: 'none', opacity: 1, borderRadius: '0px' }], { duration: 400, easing: 'cubic-bezier(.32,.72,0,1)' }); $('app').animate([{ transform: 'none' }, { transform: 'scale(.94)', opacity: .6 }], { duration: 400, easing: 'cubic-bezier(.32,.72,0,1)' }); }
-  if (!window.L) { $('mnote').hidden = true; $('map').insertAdjacentHTML('afterend', '<div class="mload" id="mload">Karte lädt …</div>'); }
-  try { await loadLeaflet(); } catch (e) { $('mload')?.remove(); $('mnote').hidden = false; $('mnote').textContent = 'Die Karte lädt gerade nicht. Bitte später nochmal versuchen.'; return; }
-  if (!MAP) { MAP = L.map('map', { zoomControl: false, attributionControl: true }); MAP.attributionControl.setPrefix(false);
-    const dark = matchMedia('(prefers-color-scheme: dark)').matches;
-    L.tileLayer(`https://{s}.basemaps.cartocdn.com/${dark ? 'dark_all' : 'rastertiles/voyager'}/{z}/{x}/{y}{r}.png`, { maxZoom: 19, attribution: '© OpenStreetMap · © CARTO' }).addTo(MAP); }
-  $('mload')?.remove(); setTimeout(() => { MAP.invalidateSize(); paintMap(true); }, 30); }
-function hideMap(now) { const v = $('mapv'); if (!v || v.hidden) return; if (now || calm()) { v.hidden = true; return; }
+  if (mapErrd) return mapErr();
+  if (!MAP) { $('mnote').hidden = true; if (!$('mload')) $('map').insertAdjacentHTML('afterend', '<div class="mload" id="mload">Karte lädt …</div>'); }
+  try { await loadGmaps(); } catch (e) { return mapErr(); }
+  if (!MAP) { GPin = gpinClass(); const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+    MAP = new google.maps.Map($('map'), { center: { lat: 48, lng: 11 }, zoom: 4, disableDefaultUI: true, clickableIcons: false, gestureHandling: 'greedy', keyboardShortcuts: false, backgroundColor: dark ? '#1d1f22' : '#f2f2f7', ...(dark ? { styles: GDARK } : {}) });
+    MAP.addListener('click', closePop); }
+  $('mload')?.remove(); if (!mapErrd) paintMap(true); }
+function hideMap(now) { const v = $('mapv'); if (!v || v.hidden) return; closePop(); if (now || calm()) { v.hidden = true; return; }
   v.animate([{ transform: 'none', opacity: 1 }, { transform: 'scale(.12)', opacity: 0 }], { duration: 300, easing: 'cubic-bezier(.4,0,1,1)' }).onfinish = () => { v.hidden = true; };
   $('app').animate([{ transform: 'scale(.94)', opacity: .6 }, { transform: 'none', opacity: 1 }], { duration: 300, easing: 'cubic-bezier(.4,0,.2,1)' }); }
 // Knopf und Zurück-Geste schließen animiert (über den Verlauf), Seitenwechsel sofort
 function closeMap(now) { const v = $('mapv'); if (!v || v.hidden) return; if (now) return hideMap(true); if (history.state && history.state.map) history.back(); else hideMap(); }
 addEventListener('popstate', () => hideMap());
 function paintMapBar() { $('mseg').innerHTML = [['all', 'Alle'], ['act', 'Aktivitäten'], ['food', 'Essen'], ['mine', 'Meine']].filter(([k]) => k !== 'food' || areas().food).map(([k, n]) => `<button type="button" data-mf="${k}" class="${mapF === k ? 'on' : ''}" aria-pressed="${mapF === k}">${n}</button>`).join(''); }
-function paintMap(fit) { if (!MAP || !T) return; if (mapLayer) mapLayer.remove(); mapLayer = L.layerGroup().addTo(MAP); const by = sigBy(), pts = [];
-  const icon = (svg, cls, col) => L.divIcon({ className: '', html: `<div class="mpin ${cls}" style="${col ? '--c:' + col : ''}">${svg}</div>`, iconSize: [30, 30], iconAnchor: [15, 15], popupAnchor: [0, -14] });
-  stops().forEach(s => { const y = s.stay || {}, lat = typeof y.lat === 'number' ? y.lat : s.lat, lng = typeof y.lat === 'number' ? y.lng : s.lng; if (typeof lat !== 'number') return; pts.push([lat, lng]);
-    L.marker([lat, lng], { icon: icon(SY.house, 'home'), zIndexOffset: -1000 }).addTo(mapLayer).bindPopup(`<b>${esc(y.name || s.name)}</b>${esc(y.name ? s.name : 'Ziel')}${s.from ? ' · ' + esc(shortRange(s.from, s.to)) : ''}<div class="mpb"><a href="${dirUrl(+lat + ',' + +lng)}" target="_blank" rel="noopener">Route ↗</a></div>`); });
+function paintMap(fit) { if (!MAP || !T || !GPin) return; closePop(); mapLayer.forEach(m => m.setMap(null)); mapLayer = []; const by = sigBy(), pts = [];
+  const pin = (lat, lng, svg, cls, col, z, pop) => { const pos = new google.maps.LatLng(+lat, +lng); pts.push(pos);
+    const m = new GPin(pos, `<div class="mpin ${cls}" style="${col ? '--c:' + col : ''}">${svg}</div>`, 'gpin', z, () => openPop(pos, pop)); m.setMap(MAP); mapLayer.push(m); };
+  stops().forEach(s => { const y = s.stay || {}, lat = typeof y.lat === 'number' ? y.lat : s.lat, lng = typeof y.lat === 'number' ? y.lng : s.lng; if (typeof lat !== 'number') return;
+    pin(lat, lng, SY.house, 'home', '', 1, `<b>${esc(y.name || s.name)}</b>${esc(y.name ? s.name : 'Ziel')}${s.from ? ' · ' + esc(shortRange(s.from, s.to)) : ''}<div class="mpb"><a href="${esc(dirUrl(+lat + ',' + +lng))}" target="_blank" rel="noopener">Route ↗</a></div>`); });
   const list = T.acts.filter(a => a.title && a.place && typeof a.place.lat === 'number' && (mapF === 'all' ? areas().food || a.cat !== 'food' : mapF === 'mine' ? (by[a.id] || []).includes(T.me) : tabOf(a) === mapF));
-  list.forEach(a => { pts.push([a.place.lat, a.place.lng]); const n = (by[a.id] || []).length;
-    L.marker([a.place.lat, a.place.lng], { icon: icon(a.cat === 'food' ? ICF.food.replace('class="f2"', '') : SY.pin, a.done ? 'done' : '', a.cat === 'food' ? '#c44d03' : '') }).addTo(mapLayer)
-      .bindPopup(`<b>${esc(a.title)}</b>${esc([a.place.name, a.day ? dayName(a.day) : '', a.done ? 'erledigt' : n ? n + (a.cat === 'food' ? ' Stimmen' : ' dabei') : ''].filter(Boolean).join(' · '))}<div class="mpb"><button type="button" data-mgo="${esc(a.id)}">Zum Vorschlag</button><a href="${dirUrl(+a.place.lat + ',' + +a.place.lng)}" target="_blank" rel="noopener">Route ↗</a></div>`); });
+  list.forEach(a => { const n = (by[a.id] || []).length;
+    pin(a.place.lat, a.place.lng, a.cat === 'food' ? ICF.food.replace('class="f2"', '') : SY.pin, a.done ? 'done' : '', a.cat === 'food' ? '#c44d03' : '', 2,
+      `<b>${esc(a.title)}</b>${esc([a.place.name, a.day ? dayName(a.day) : '', a.done ? 'erledigt' : n ? n + (a.cat === 'food' ? ' Stimmen' : ' dabei') : ''].filter(Boolean).join(' · '))}<div class="mpb"><button type="button" data-mgo="${esc(a.id)}">Zum Vorschlag</button><a href="${esc(dirUrl(+a.place.lat + ',' + +a.place.lng))}" target="_blank" rel="noopener">Route ↗</a></div>`); });
   const none = T.acts.filter(a => a.title && !a.done && a.place && a.place.name && typeof a.place.lat !== 'number').length;
-  $('mnote').hidden = pts.length && !none; $('mnote').textContent = !pts.length ? 'Noch keine Orte. Beim Vorschlagen einen Ort aus der Suche wählen, dann erscheint er hier.' : none === 1 ? '1 Ort ohne Kartenpunkt (frei getippt)' : none + ' Orte ohne Kartenpunkt (frei getippt)';
-  if (fit) { if (pts.length > 1) MAP.fitBounds(pts, { padding: [60, 60], maxZoom: 15 }); else if (pts.length) MAP.setView(pts[0], 13); else MAP.setView([48, 11], 4); } }
+  $('mnote').hidden = pts.length && !none; $('mnote').textContent = !pts.length ? 'Noch keine Orte. Beim Vorschlagen einen Ort aus der Suche wählen, dann erscheint er hier.' : none === 1 ? '1 Ort ohne Kartenpunkt' : none + ' Orte ohne Kartenpunkt';
+  if (fit) { if (pts.length > 1) { const bd = new google.maps.LatLngBounds(); pts.forEach(p => bd.extend(p)); MAP.fitBounds(bd, { top: 90, bottom: 70, left: 40, right: 40 }); google.maps.event.addListenerOnce(MAP, 'idle', () => { if (MAP.getZoom() > 15) MAP.setZoom(15); }); }
+    else if (pts.length) { MAP.setCenter(pts[0]); MAP.setZoom(13); } else { MAP.setCenter({ lat: 48, lng: 11 }); MAP.setZoom(4); } } }
 $('mapv').addEventListener('click', e => { const f = e.target.closest('[data-mf]'); if (f) { mapF = f.dataset.mf; paintMapBar(); paintMap(true); return; }
   const g = e.target.closest('[data-mgo]'); if (g) { const id = g.dataset.mgo; closeMap(); setTimeout(() => goToCard(id), 360); return; }
   if (e.target.closest('#mclose')) closeMap(); });
