@@ -273,14 +273,17 @@ html.noglow .lq>.gl{transition:none!important;opacity:0!important}.navrow>.gl,.r
 .rb.l{-webkit-mask-image:linear-gradient(to right,#000 45%,transparent);mask-image:linear-gradient(to right,#000 45%,transparent)}
 .rb.r{-webkit-mask-image:linear-gradient(to left,#000 45%,transparent);mask-image:linear-gradient(to left,#000 45%,transparent)}
 main.rcl{position:absolute;margin:0;min-height:0;pointer-events:none}
-.mrb.t{left:0;right:0;top:0;height:10px}.mrb.b{left:0;right:0;bottom:0;height:10px}.mrb.l{left:0;top:0;bottom:0;width:12px}.mrb.r{right:0;top:0;bottom:0;width:12px}
+.mrb.t{left:14px;right:14px;top:0;height:10px}.mrb.b{left:14px;right:14px;bottom:0;height:10px}.mrb.l{left:0;top:14px;bottom:14px;width:12px}.mrb.r{right:0;top:14px;bottom:14px;width:12px}
 .mrb::after{background:var(--mg)}
 /* Ecken (Bildschirmfoto Lars 17.11.2026: Glas stand in den Ecken eckig über die Rundung): Safari schneidet Weichzeichnung in Unterelementen nicht an der Rundung des Menüs ab. Darum sind die Streifen selbst rund: Hülle mit clip-path, und die Weichzeichnung jedes Streifens hat die Eck-Rundung als eigene Form. Feste 30 px (Rundung des fertigen Menüs): je Bild mitgeführt bremste das Öffnen. */
 .rbw{position:absolute;inset:0;border-radius:inherit;overflow:hidden;clip-path:inset(0 round var(--mr,30px));pointer-events:none}
-.mrb.t::after{bottom:auto;height:calc(var(--mr,30px)*2);border-radius:var(--mr,30px) var(--mr,30px) 0 0}
-.mrb.b::after{top:auto;height:calc(var(--mr,30px)*2);border-radius:0 0 var(--mr,30px) var(--mr,30px)}
-.mrb.l::after{right:auto;width:calc(var(--mr,30px)*2);border-radius:var(--mr,30px) 0 0 var(--mr,30px)}
-.mrb.r::after{left:auto;width:calc(var(--mr,30px)*2);border-radius:0 var(--mr,30px) var(--mr,30px) 0}
+/* Ecken (Bildschirmfoto Lars 17.11.2026: innen blieb ein dunkles Viereck mit spitzer Ecke, weil sich die Streifen in der Ecke rechtwinklig trafen): Die Streifen enden vor den Ecken und laufen zu ihnen hin weich aus; in den Ecken folgt das Glas nur der Rundung. */
+.mrb.t,.mrb.b{-webkit-mask-composite:source-in;mask-composite:intersect}
+.mrb.l,.mrb.r{-webkit-mask-composite:source-in;mask-composite:intersect}
+.mrb.t{-webkit-mask-image:linear-gradient(to bottom,#000 45%,transparent),linear-gradient(to right,transparent,#000 26px,#000 calc(100% - 26px),transparent);mask-image:linear-gradient(to bottom,#000 45%,transparent),linear-gradient(to right,transparent,#000 26px,#000 calc(100% - 26px),transparent)}
+.mrb.b{-webkit-mask-image:linear-gradient(to top,#000 45%,transparent),linear-gradient(to right,transparent,#000 26px,#000 calc(100% - 26px),transparent);mask-image:linear-gradient(to top,#000 45%,transparent),linear-gradient(to right,transparent,#000 26px,#000 calc(100% - 26px),transparent)}
+.mrb.l{-webkit-mask-image:linear-gradient(to right,#000 45%,transparent),linear-gradient(to bottom,transparent,#000 26px,#000 calc(100% - 26px),transparent);mask-image:linear-gradient(to right,#000 45%,transparent),linear-gradient(to bottom,transparent,#000 26px,#000 calc(100% - 26px),transparent)}
+.mrb.r{-webkit-mask-image:linear-gradient(to left,#000 45%,transparent),linear-gradient(to bottom,transparent,#000 26px,#000 calc(100% - 26px),transparent);mask-image:linear-gradient(to left,#000 45%,transparent),linear-gradient(to bottom,transparent,#000 26px,#000 calc(100% - 26px),transparent)}
 main.rcl.mst{animation:none}
 
 /* ⋯-Menü: der Knopf wächst zum Glas-Menü (aus der Vorlage) */
@@ -2241,7 +2244,7 @@ function mframe(M) { const p = M.P.x, ph = M.Q.x, q = Math.max(0, Math.min(1, p,
   const e0 = Math.max(0, Math.min(1, (q - .25) / .6)), e = e0 * e0 * (3 - 2 * e0), half = Math.min(w, h) / 2, R = half * (1 - e) + B.rad * e;   // erst rund, dann abgerundetes Rechteck
   Object.assign(M.m.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px', borderRadius: R.toFixed(1) + 'px',
     opacity: Math.min(1, .25 + Math.max(0, p) * 2.2).toFixed(3), boxShadow: `inset 0 0 22px var(--msh),${RIM},0 ${(8 + 10 * q).toFixed(1)}px ${(20 + 30 * q).toFixed(1)}px rgba(0,0,0,${(.1 + .12 * q).toFixed(3)})` });
-  if (M.rb) for (const e of M.rb) { e.c.style.left = (M.mr.l - x - (e.k === 'r' ? w - 12 : 0)) + 'px'; e.c.style.top = (M.mr.t - y - (e.k === 'b' ? h - 10 : 0)) + 'px'; }
+  if (M.rb) for (const e of M.rb) { const v = e.k === 'l' || e.k === 'r'; e.c.style.left = (M.mr.l - x - (e.k === 'r' ? w - 12 : v ? 0 : 14)) + 'px'; e.c.style.top = (M.mr.t - y - (e.k === 'b' ? h - 10 : v ? 14 : 0)) + 'px'; }   // Streifen beginnen 14 px nach der Ecke
   const k = Math.max(0, Math.min(1, Math.min(p, ph) / .8));   // Inhalt ist von Anfang an da: klein und unscharf, wächst mit und wird scharf
   M.inn.style.opacity = (.35 + .65 * k).toFixed(3); M.inn.style.filter = k < 1 ? `blur(${((1 - k) * 7).toFixed(2)}px)` : ''; M.inn.style.transform = `scale(${(.55 + .45 * Math.min(1.03, Math.max(0, p))).toFixed(4)})`; }
 function mkick() { if (!mraf) { mlast = performance.now(); mraf = requestAnimationFrame(mtick); } }
