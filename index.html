@@ -535,16 +535,16 @@ main.wash .mapb{background:var(--card)}
 #map{position:absolute;inset:0}
 .mtop{position:absolute;z-index:500;left:0;right:0;top:calc(10px + env(safe-area-inset-top,0px));display:flex;gap:10px;align-items:center;padding:0 max(16px,env(safe-area-inset-left,0px))}
 .mtop .nb{position:static}
-.mseg{flex:1;display:flex;padding:4px;border-radius:999px;background:var(--gb);-webkit-backdrop-filter:blur(14px) saturate(180%);backdrop-filter:blur(14px) saturate(180%);box-shadow:inset 0 0 0 .5px var(--lgbd),inset 0 1px 0 var(--lghi),var(--gbsh);min-width:0}
-.mseg button{flex:1 1 auto;min-height:36px;border-radius:999px;font-size:13px;font-weight:600;white-space:nowrap;min-width:0;padding:0 4px}
-.mseg button.on{background:var(--card);color:var(--ac);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.mseg{position:relative;flex:1;display:flex;padding:4px;border-radius:999px;background:var(--gb);-webkit-backdrop-filter:blur(14px) saturate(180%);backdrop-filter:blur(14px) saturate(180%);box-shadow:inset 0 0 0 .5px var(--lgbd),inset 0 1px 0 var(--lghi),var(--gbsh);min-width:0}
+.mseg button{position:relative;z-index:1;transition:color .25s;flex:1 1 auto;min-height:36px;border-radius:999px;font-size:13px;font-weight:600;white-space:nowrap;min-width:0;padding:0 4px}
+.mseg button.on{color:var(--ac)}
 .mpin{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--c,var(--acb));box-shadow:0 0 0 2.5px #fff,0 3px 8px rgba(0,0,0,.35)}
 .mpin svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .mpin.done{opacity:.55}
 .mpin.home{--c:#1c1c1e}
 .gpin{position:absolute;transform:translate(-50%,-50%);cursor:pointer}
 .gpin::after{content:'';position:absolute;inset:-7px}   /* Tippfläche 44 */
-.gpop{position:absolute;width:min(280px,calc(100vw - 32px));transform:translate(-50%,calc(-100% - 24px));padding:14px 16px;border-radius:20px;background:var(--card);color:var(--tx);box-shadow:0 10px 30px rgba(0,0,0,.25);font:15px/1.33 var(--font);cursor:default}
+.gpop{position:absolute;width:min(280px,calc(100vw - 32px));transform:translate(-50%,calc(-100% - 24px));transform-origin:50% 100%;padding:14px 16px;border-radius:22px;background:var(--card);color:var(--tx);box-shadow:0 10px 30px rgba(0,0,0,.25);font:15px/1.33 var(--font);cursor:default}
 .gpop::after{content:'';position:absolute;left:50%;bottom:-7px;width:14px;height:14px;background:var(--card);transform:translateX(-50%) rotate(45deg);border-radius:2px}
 @media (prefers-color-scheme:dark){.gpop,.gpop::after{background:#2c2c2e}}   /* im Dunkeln heller als die Karte (Apples erhöhte Fläche) */
 .gpop b{display:block;font-size:17px;font-weight:600;margin-bottom:2px}
@@ -2122,10 +2122,12 @@ function gpinClass() { return class extends google.maps.OverlayView {
   constructor(pos, html, cls, z, tap) { super(); this.pos = pos; this.html = html; this.cls = cls; this.z = z; this.tap = tap; }
   onAdd() { const d = this.div = document.createElement('div'); d.className = this.cls; d.style.zIndex = this.z; d.innerHTML = this.html;
     if (this.tap) d.addEventListener('click', e => { e.stopPropagation(); this.tap(); }); else google.maps.OverlayView.preventMapHitsAndGesturesFrom(d);
-    this.getPanes()[this.tap ? 'overlayMouseTarget' : 'floatPane'].append(d); }
+    this.getPanes()[this.tap ? 'overlayMouseTarget' : 'floatPane'].append(d);
+    if (!calm()) d.animate(this.tap ? [{ opacity: 0, scale: '.5' }, { opacity: 1, scale: '1' }] : [{ opacity: 0, scale: '.6' }, { opacity: 1, scale: '1' }], { duration: this.tap ? 280 : 300, easing: 'cubic-bezier(.32,.72,0,1)' }); }
+  fadeOut() { const d = this.div; if (!d || calm()) return this.setMap(null); d.style.pointerEvents = 'none'; d.animate([{ opacity: 1, scale: '1' }, { opacity: 0, scale: this.tap ? '.5' : '.9' }], { duration: this.tap ? 180 : 140, easing: 'ease-in', fill: 'forwards' }).onfinish = () => this.setMap(null); }
   draw() { const p = this.getProjection().fromLatLngToDivPixel(this.pos); if (p) { this.div.style.left = p.x + 'px'; this.div.style.top = p.y + 'px'; } }
   onRemove() { this.div.remove(); } }; }
-function closePop() { if (mapPop) { mapPop.setMap(null); mapPop = null; } }
+function closePop(now) { if (mapPop) { now ? mapPop.setMap(null) : mapPop.fadeOut(); mapPop = null; } }
 function openPop(pos, html) { closePop(); mapPop = new GPin(pos, html, 'gpop', 1000, null); mapPop.setMap(MAP); MAP.panTo(pos); }
 async function openMap(btn) { mapBtn = btn; mapF = tab === 'food' ? 'food' : tab === 'plan' ? 'mine' : 'all';
   const v = $('mapv'), r = btn.getBoundingClientRect(); v.style.setProperty('--mx', (r.left + r.width / 2) + 'px'); v.style.setProperty('--my', (r.top + r.height / 2) + 'px');
@@ -2138,14 +2140,17 @@ async function openMap(btn) { mapBtn = btn; mapF = tab === 'food' ? 'food' : tab
     MAP = new google.maps.Map($('map'), { center: { lat: 48, lng: 11 }, zoom: 4, disableDefaultUI: true, clickableIcons: false, gestureHandling: 'greedy', keyboardShortcuts: false, backgroundColor: dark ? '#1d1f22' : '#f2f2f7', ...(dark ? { styles: GDARK } : {}) });
     MAP.addListener('click', closePop); }
   $('mload')?.remove(); if (!mapErrd) paintMap(true); }
-function hideMap(now) { const v = $('mapv'); if (!v || v.hidden) return; closePop(); if (now || calm()) { v.hidden = true; return; }
+function hideMap(now) { const v = $('mapv'); if (!v || v.hidden) return; closePop(true); if (now || calm()) { v.hidden = true; return; }
   v.animate([{ transform: 'none', opacity: 1 }, { transform: 'scale(.12)', opacity: 0 }], { duration: 300, easing: 'cubic-bezier(.4,0,1,1)' }).onfinish = () => { v.hidden = true; };
   $('app').animate([{ transform: 'scale(.94)', opacity: .6 }, { transform: 'none', opacity: 1 }], { duration: 300, easing: 'cubic-bezier(.4,0,.2,1)' }); }
 // Knopf und Zurück-Geste schließen animiert (über den Verlauf), Seitenwechsel sofort
 function closeMap(now) { const v = $('mapv'); if (!v || v.hidden) return; if (now) return hideMap(true); if (history.state && history.state.map) history.back(); else hideMap(); }
 addEventListener('popstate', () => hideMap());
-function paintMapBar() { $('mseg').innerHTML = [['all', 'Alle'], ['act', 'Aktivitäten'], ['food', 'Essen'], ['mine', 'Meine']].filter(([k]) => k !== 'food' || areas().food).map(([k, n]) => `<button type="button" data-mf="${k}" class="${mapF === k ? 'on' : ''}" aria-pressed="${mapF === k}">${n}</button>`).join(''); }
-function paintMap(fit) { if (!MAP || !T || !GPin) return; closePop(); mapLayer.forEach(m => m.setMap(null)); mapLayer = []; const by = sigBy(), pts = [];
+function paintMapBar() { $('mseg').innerHTML = '<span class="ind2"></span>' + [['all', 'Alle'], ['act', 'Aktivitäten'], ['food', 'Essen'], ['mine', 'Meine']].filter(([k]) => k !== 'food' || areas().food).map(([k, n]) => `<button type="button" data-mf="${k}" class="${mapF === k ? 'on' : ''}" aria-pressed="${mapF === k}">${n}</button>`).join(''); mapPearl(false); }
+// Perle des Karten-Filters: gleitet wie bei den Umschaltern der App (gleiche Feder über .ind2)
+function mapPearl(glide) { const s = $('mseg'), on = s.querySelector('button.on'), ind = s.querySelector('.ind2'); if (!on || !ind) return; if (!glide || calm()) ind.style.transition = 'none';
+  ind.style.width = on.offsetWidth + 'px'; ind.style.translate = (on.offsetLeft - 4) + 'px 0'; if (!glide || calm()) { void ind.offsetWidth; ind.style.transition = ''; } }
+function paintMap(fit) { if (!MAP || !T || !GPin) return; closePop(); mapLayer.forEach(m => m.fadeOut()); mapLayer = []; const by = sigBy(), pts = [];
   const pin = (lat, lng, svg, cls, col, z, pop) => { const pos = new google.maps.LatLng(+lat, +lng); pts.push(pos);
     const m = new GPin(pos, `<div class="mpin ${cls}" style="${col ? '--c:' + col : ''}">${svg}</div>`, 'gpin', z, () => openPop(pos, pop)); m.setMap(MAP); mapLayer.push(m); };
   stops().forEach(s => { const y = s.stay || {}, lat = typeof y.lat === 'number' ? y.lat : s.lat, lng = typeof y.lat === 'number' ? y.lng : s.lng; if (typeof lat !== 'number') return;
@@ -2158,7 +2163,7 @@ function paintMap(fit) { if (!MAP || !T || !GPin) return; closePop(); mapLayer.f
   $('mnote').hidden = pts.length && !none; $('mnote').textContent = !pts.length ? 'Noch keine Orte. Beim Vorschlagen einen Ort aus der Suche wählen, dann erscheint er hier.' : none === 1 ? '1 Ort ohne Kartenpunkt' : none + ' Orte ohne Kartenpunkt';
   if (fit) { if (pts.length > 1) { const bd = new google.maps.LatLngBounds(); pts.forEach(p => bd.extend(p)); MAP.fitBounds(bd, { top: 90, bottom: 70, left: 40, right: 40 }); google.maps.event.addListenerOnce(MAP, 'idle', () => { if (MAP.getZoom() > 15) MAP.setZoom(15); }); }
     else if (pts.length) { MAP.setCenter(pts[0]); MAP.setZoom(13); } else { MAP.setCenter({ lat: 48, lng: 11 }); MAP.setZoom(4); } } }
-$('mapv').addEventListener('click', e => { const f = e.target.closest('[data-mf]'); if (f) { mapF = f.dataset.mf; paintMapBar(); paintMap(true); return; }
+$('mapv').addEventListener('click', e => { const f = e.target.closest('[data-mf]'); if (f) { if (mapF === f.dataset.mf) return; mapF = f.dataset.mf; $('mseg').querySelectorAll('[data-mf]').forEach(b => { b.classList.toggle('on', b === f); b.setAttribute('aria-pressed', b === f); }); mapPearl(true); paintMap(true); return; }
   const g = e.target.closest('[data-mgo]'); if (g) { const id = g.dataset.mgo; closeMap(); setTimeout(() => goToCard(id), 360); return; }
   if (e.target.closest('#mclose')) closeMap(); });
 
