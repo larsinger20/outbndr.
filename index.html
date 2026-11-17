@@ -538,9 +538,6 @@ main.wash .mapb{background:var(--card)}
 #map{position:absolute;inset:0}
 .mtop{position:absolute;z-index:500;left:0;right:0;top:calc(10px + env(safe-area-inset-top,0px));display:flex;gap:10px;align-items:center;padding:0 max(16px,env(safe-area-inset-left,0px))}
 .mtop .nb{position:static}
-.mseg{position:relative;flex:1;display:flex;padding:4px;border-radius:999px;background:var(--gb);-webkit-backdrop-filter:blur(14px) saturate(180%);backdrop-filter:blur(14px) saturate(180%);box-shadow:inset 0 0 0 .5px var(--lgbd),inset 0 1px 0 var(--lghi),var(--gbsh);min-width:0}
-.mseg button{position:relative;z-index:1;transition:color .25s;flex:1 1 auto;min-height:36px;border-radius:999px;font-size:13px;font-weight:600;white-space:nowrap;min-width:0;padding:0 4px}
-.mseg button.on{color:var(--ac)}
 .mpin{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--c,var(--acb));box-shadow:0 0 0 2.5px #fff,0 3px 8px rgba(0,0,0,.35)}
 .mpin svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .mpin.done{opacity:.55}
@@ -553,7 +550,7 @@ main.wash .mapb{background:var(--card)}
 .gpop b{display:block;font-size:17px;font-weight:600;margin-bottom:2px}
 .gpop .mpb{display:flex;gap:8px;margin-top:10px}
 .gpop .mpb a,.gpop .mpb button{flex:1;min-height:44px;border-radius:999px;background:var(--btn);color:var(--ac);font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;text-decoration:none;white-space:nowrap;padding:0 12px}
-.mnone{position:absolute;z-index:500;left:16px;right:16px;bottom:calc(20px + env(safe-area-inset-bottom,0px));padding:12px 16px;border-radius:20px;background:var(--gb);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:var(--gbsh);font-size:15px;text-align:center}
+.mnone{position:absolute;z-index:500;left:16px;right:16px;bottom:calc(max(12px,calc(env(safe-area-inset-bottom,0px) - 14px)) + 112px);padding:12px 16px;border-radius:20px;background:var(--gb);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:var(--gbsh);font-size:15px;text-align:center}
 /* Hinweis auf neue Version */
 .upd{position:fixed;z-index:60;left:50%;translate:-50% 0;top:calc(10px + env(safe-area-inset-top,0px));padding:11px 18px;border-radius:999px;font-size:15px;font-weight:600;color:var(--tx);background:var(--mg);-webkit-backdrop-filter:blur(20px) saturate(200%);backdrop-filter:blur(20px) saturate(200%);box-shadow:inset 0 0 0 .5px var(--lgbd),inset 0 1px 0 var(--lghi),0 8px 24px rgba(0,0,0,.16);width:max-content;max-width:calc(100% - 120px);animation:tin .35s cubic-bezier(.3,1.3,.5,1)}
 /* Tipp beim ersten Besuch */
@@ -662,7 +659,7 @@ a.gl2 .chv,button.gl2 .chv{margin-left:auto}
 .fab.lq{position:fixed}.fab.lq.pr{transform:scale(.94)}
 html.kb #fab,html.fo #fab{opacity:0;pointer-events:none;translate:0 24px}
 html.lc .ntitle{left:126px;right:126px}
-html.kb #tbar,html.fo #tbar{opacity:0;pointer-events:none;translate:0 24px}#tbar{transition:transform .22s cubic-bezier(.3,.7,.4,1),opacity .25s ease,translate .35s var(--ios)}
+html.kb #tbar,html.fo #tbar{opacity:0;pointer-events:none;translate:0 24px}html.mapon #tbar{z-index:41;opacity:1;pointer-events:auto;translate:none}#tbar{transition:transform .22s cubic-bezier(.3,.7,.4,1),opacity .25s ease,translate .35s var(--ios)}
 /* Kurze Tour (wie im Malta-Planner): Seite abgedunkelt, Lichtloch über dem erklärten Element, Glas-Blase daneben */
 .tour{position:fixed;inset:0;z-index:60;touch-action:none}
 .thole{position:fixed;border-radius:18px;pointer-events:none;box-shadow:0 0 0 2px rgba(255,255,255,.4),0 0 0 200vmax rgba(0,0,0,.55)}
@@ -692,7 +689,7 @@ html.kb #tbar,html.fo #tbar{opacity:0;pointer-events:none;translate:0 24px}#tbar
   <div class="clip"><div class="trow" id="trow"></div></div>
   <div class="rowc"><div class="trow" id="prow" style="pointer-events:none"><div class="pill" id="pill"><div class="pf"></div><div class="pg"></div><div class="lw"><div class="lm" id="lm"><div class="lens" id="lens"></div></div><div class="ls l" id="lsl"><div class="st"><div class="lens" id="lensL"></div></div></div><div class="ls r" id="lsr"><div class="st"><div class="lens" id="lensR"></div></div></div></div></div></div></div>
 </nav>
-<div id="mapv" hidden><div id="map" aria-label="Karte"></div><div class="mtop"><button class="nb lq" id="mclose" type="button" aria-label="Karte schließen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg><span class="gl"></span></button><div class="mseg" id="mseg" role="group" aria-label="Filter"></div></div><div class="mnone" id="mnote" hidden></div></div>
+<div id="mapv" hidden><div id="map" aria-label="Karte"></div><div class="mtop"><button class="nb lq" id="mclose" type="button" aria-label="Karte schließen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg><span class="gl"></span></button></div><div class="mnone" id="mnote" hidden></div></div>
 
 <script type="module">
 /*FIREBASE-ANFANG (die Testkopie ersetzt diesen Block durch Beispieldaten)*/
@@ -793,6 +790,8 @@ const ICF = {
   act: '<svg viewBox="0 0 24 24" class="f"><path d="M2.5 19.5 9 8.5l3.7 6.2 2.6-3.7 6.2 8.5z" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
   food: '<svg class="f2" viewBox="0 0 24 24"><path d="M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M17 21V3c-2 1-3.5 3.5-3.5 7v3H17"/></svg>',
   cost: '<svg viewBox="0 0 24 24" class="f"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M15.4 8.4A4.4 4.4 0 1 0 15.4 15.6M7 10.7h5.8M7 13.3h5.8" stroke="var(--card)" stroke-width="2.1" fill="none" stroke-linecap="round"/></svg>',
+  all: '<svg viewBox="0 0 24 24" class="f"><path d="M9 3.8 3 6v14.2l6-2.2 6 2.2 6-2.2V3.8l-6 2.2z" fill="currentColor"/><path d="M9 4v14M15 6v14" stroke="var(--card)" stroke-width="1.5"/></svg>',
+  mine: '<svg viewBox="0 0 24 24" class="f"><circle cx="12" cy="7.6" r="4.1" fill="currentColor"/><path d="M3.8 21c.5-4.6 3.8-7.4 8.2-7.4s7.7 2.8 8.2 7.4z" fill="currentColor"/></svg>',
   plan: '<svg viewBox="0 0 24 24" class="f"><rect x="3" y="4.5" width="18" height="16.5" rx="3.5" fill="currentColor"/><path d="M3 9.6h18" stroke="var(--card)" stroke-width="1.5"/><path d="M8.7 15.1l2.2 2.2 4.5-4.5" stroke="var(--card)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 };
 
@@ -1027,7 +1026,7 @@ const areas = () => ({ food: true, shop: true, cost: true, plan: true, map: true
 const shopOn = () => { const a = areas(); return !!(a.food && a.shop); };   // Einkaufsliste gehört zu Essen, lässt sich aber einzeln ausschalten (fehlt das Feld: an)
 const stops = () => ((T && T.info && T.info.stops) || []).filter(s => s && s.name);
 // Reiter je nach gewählten Bereichen; Wechsel baut die Leiste neu
-function setTabs() { const a = areas(), next = ALLTABS.filter(([k]) => k === 'act' || a[k]); if (next.map(x => x[0]).join() !== TABS.map(x => x[0]).join()) { TABS = next; buildBar(); }
+function setTabs() { const a = areas(), next = ALLTABS.filter(([k]) => k === 'act' || a[k]); if (next.map(x => x[0]).join() !== TABS.map(x => x[0]).join()) { TABS = next; if (!barMap) buildBar(); }
   if (!TABS.some(x => x[0] === tab)) { tab = 'act'; if (barReady) geo(); } }
 
 function takeDraft(id) { const d = drafts[id]; if (!d) return; delete drafts[id]; ({ F, Cf, Rv } = d); tab = d.tab; foodView = d.foodView; restoreDraft = true; }
@@ -2071,7 +2070,7 @@ function watchSeen() { if (!('IntersectionObserver' in window)) return;
     else { clearTimeout(seenT.get(id)); seenT.delete(id); } }), { threshold: [0, .5, 1] });
   seenObs.disconnect(); document.querySelectorAll('#app [data-seen]').forEach(el => { const id = el.dataset.id || el.dataset.sid2; shownNew.add(id); seenObs.observe(el); }); }
 // Pille „Neu“ bleibt bis zum Reiterwechsel (shownNew), auch wenn schon gesehen
-function dots() { for (const r of [trow]) [...r.children].forEach(b => { const has = tabDot(b.dataset.t); let d = b.querySelector('.dot'); if (has && !d) b.insertAdjacentHTML('beforeend', '<i class="dot" aria-label="Neues"></i>'); else if (!has && d) d.remove(); }); }
+function dots() { for (const r of [trow]) [...r.children].forEach(b => { const has = !barMap && tabDot(b.dataset.t); let d = b.querySelector('.dot'); if (has && !d) b.insertAdjacentHTML('beforeend', '<i class="dot" aria-label="Neues"></i>'); else if (!has && d) d.remove(); }); }
 
 /* ---------- Was steht in welchem ⋯-Menü ---------- */
 function menuFor(btn) { const k = btn.dataset.menu;
@@ -2130,29 +2129,33 @@ function gpinClass() { return class extends google.maps.OverlayView {
   fadeOut() { const d = this.div; if (!d || calm()) return this.setMap(null); d.style.pointerEvents = 'none'; d.animate([{ opacity: 1, scale: '1' }, { opacity: 0, scale: this.tap ? '.5' : '.9' }], { duration: this.tap ? 180 : 140, easing: 'ease-in', fill: 'forwards' }).onfinish = () => this.setMap(null); }
   draw() { const p = this.getProjection().fromLatLngToDivPixel(this.pos); if (p) { this.div.style.left = p.x + 'px'; this.div.style.top = p.y + 'px'; } }
   onRemove() { this.div.remove(); } }; }
+// Googles Logo und „Kartendaten“ müssen sichtbar bleiben: Was Google unten an den Rand setzt, rückt über die Reiter-Leiste (nach jedem Neuzeichnen, Google setzt es manchmal zurück)
+function liftGm() { const gs = document.querySelector('#map .gm-style'), b = $('tbar'); if (!gs || b.hidden) return; const lift = Math.max(0, Math.round(innerHeight - b.getBoundingClientRect().top + 4));   // am Bildschirm messen: die Karte wächst beim Öffnen noch aus dem Knopf
+  gs.querySelectorAll('div, a, button').forEach(e => { if (e.offsetParent === gs && e.offsetHeight > 0 && e.offsetHeight < 60 && e.style.bottom !== lift + 'px') {   // nur die äußerste Hülle, sonst wandern innere Teile doppelt
+    const cs = getComputedStyle(e); if (cs.position === 'absolute' && cs.bottom === '0px') e.style.bottom = lift + 'px'; } }); }
 function closePop(now) { if (mapPop) { now ? mapPop.setMap(null) : mapPop.fadeOut(); mapPop = null; } }
 function openPop(pos, html) { closePop(); mapPop = new GPin(pos, html, 'gpop', 1000, null); mapPop.setMap(MAP); MAP.panTo(pos); }
 async function openMap(btn) { mapBtn = btn; mapF = tab === 'food' ? 'food' : tab === 'plan' ? 'mine' : 'all';
   const v = $('mapv'), r = btn.getBoundingClientRect(); v.style.setProperty('--mx', (r.left + r.width / 2) + 'px'); v.style.setProperty('--my', (r.top + r.height / 2) + 'px');
-  v.hidden = false; history.pushState({ map: 1 }, ''); paintMapBar();
+  v.hidden = false; history.pushState({ map: 1 }, ''); mapBar(true);
   if (!calm()) { v.animate([{ transform: 'scale(.12)', opacity: 0, borderRadius: '40px' }, { transform: 'none', opacity: 1, borderRadius: '0px' }], { duration: 400, easing: 'cubic-bezier(.32,.72,0,1)' }); $('app').animate([{ transform: 'none' }, { transform: 'scale(.94)', opacity: .6 }], { duration: 400, easing: 'cubic-bezier(.32,.72,0,1)' }); }
   if (mapErrd) return mapErr();
   if (!MAP) { $('mnote').hidden = true; if (!$('mload')) $('map').insertAdjacentHTML('afterend', '<div class="mload" id="mload">Karte lädt …</div>'); }
   try { await loadGmaps(); } catch (e) { return mapErr(); }
   if (!MAP) { GPin = gpinClass(); const dark = matchMedia('(prefers-color-scheme: dark)').matches;
     MAP = new google.maps.Map($('map'), { center: { lat: 48, lng: 11 }, zoom: 4, disableDefaultUI: true, clickableIcons: false, gestureHandling: 'greedy', keyboardShortcuts: false, backgroundColor: dark ? '#1d1f22' : '#f2f2f7', ...(dark ? { styles: GDARK } : {}) });
-    MAP.addListener('click', closePop); }
-  $('mload')?.remove(); if (!mapErrd) paintMap(true); }
-function hideMap(now) { const v = $('mapv'); if (!v || v.hidden) return; closePop(true); if (now || calm()) { v.hidden = true; return; }
+    MAP.addListener('click', closePop); let lq = 0; new MutationObserver(() => { if (!lq) lq = requestAnimationFrame(() => { lq = 0; liftGm(); }); }).observe($('map'), { subtree: true, childList: true, attributes: true, attributeFilter: ['style'] }); }   // Google fügt Logo und Hinweise erst später ein
+  $('mload')?.remove(); if (!mapErrd) paintMap(true); setTimeout(liftGm, 450); }
+function hideMap(now) { const v = $('mapv'); if (!v || v.hidden) return; closePop(true); mapBar(false); if (now || calm()) { v.hidden = true; return; }
   v.animate([{ transform: 'none', opacity: 1 }, { transform: 'scale(.12)', opacity: 0 }], { duration: 300, easing: 'cubic-bezier(.4,0,1,1)' }).onfinish = () => { v.hidden = true; };
   $('app').animate([{ transform: 'scale(.94)', opacity: .6 }, { transform: 'none', opacity: 1 }], { duration: 300, easing: 'cubic-bezier(.4,0,.2,1)' }); }
 // Knopf und Zurück-Geste schließen animiert (über den Verlauf), Seitenwechsel sofort
 function closeMap(now) { const v = $('mapv'); if (!v || v.hidden) return; if (now) return hideMap(true); if (history.state && history.state.map) history.back(); else hideMap(); }
 addEventListener('popstate', () => hideMap());
-function paintMapBar() { $('mseg').innerHTML = '<span class="ind2"></span>' + [['all', 'Alle'], ['act', 'Aktivitäten'], ['food', 'Essen'], ['mine', 'Meine']].filter(([k]) => k !== 'food' || areas().food).map(([k, n]) => `<button type="button" data-mf="${k}" class="${mapF === k ? 'on' : ''}" aria-pressed="${mapF === k}">${n}</button>`).join(''); mapPearl(false); }
-// Perle des Karten-Filters: gleitet wie bei den Umschaltern der App (gleiche Feder über .ind2)
-function mapPearl(glide) { const s = $('mseg'), on = s.querySelector('button.on'), ind = s.querySelector('.ind2'); if (!on || !ind) return; if (!glide || calm()) ind.style.transition = 'none';
-  ind.style.width = on.offsetWidth + 'px'; ind.style.translate = (on.offsetLeft - 4) + 'px 0'; if (!glide || calm()) { void ind.offsetWidth; ind.style.transition = ''; } }
+// Leiste zwischen Reitern und Karten-Filtern umschalten; die Einträge blenden kurz über
+function mapBar(on) { if (barMap === on) return; barMap = on; document.documentElement.classList.toggle('mapon', on); if (on && !MAPTABS().some(x => x[0] === mapF)) mapF = 'all';
+  buildBar(); if (!on) dots(); if (!calm()) for (const r of [trow, $('prow')]) r.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: 'ease' }); }
+function mapFilter(k) { if (k === mapF) return; mapF = k; mark(); paintMap(true); }
 function paintMap(fit) { if (!MAP || !T || !GPin) return; closePop(); mapLayer.forEach(m => m.fadeOut()); mapLayer = []; const by = sigBy(), pts = [];
   const pin = (lat, lng, svg, cls, col, z, pop) => { const pos = new google.maps.LatLng(+lat, +lng); pts.push(pos);
     const m = new GPin(pos, `<div class="mpin ${cls}" style="${col ? '--c:' + col : ''}">${svg}</div>`, 'gpin', z, () => openPop(pos, pop)); m.setMap(MAP); mapLayer.push(m); };
@@ -2164,9 +2167,9 @@ function paintMap(fit) { if (!MAP || !T || !GPin) return; closePop(); mapLayer.f
       `<b>${esc(a.title)}</b>${esc([a.place.name, a.day ? dayName(a.day) : '', a.done ? 'erledigt' : n ? n + (a.cat === 'food' ? ' Stimmen' : ' dabei') : ''].filter(Boolean).join(' · '))}<div class="mpb"><button type="button" data-mgo="${esc(a.id)}">Zum Vorschlag</button><a href="${esc(dirUrl(+a.place.lat + ',' + +a.place.lng))}" target="_blank" rel="noopener">Route ↗</a></div>`); });
   const none = T.acts.filter(a => a.title && !a.done && a.place && a.place.name && typeof a.place.lat !== 'number').length;
   $('mnote').hidden = pts.length && !none; $('mnote').textContent = !pts.length ? 'Noch keine Orte. Beim Vorschlagen einen Ort aus der Suche wählen, dann erscheint er hier.' : none === 1 ? '1 Ort ohne Kartenpunkt' : none + ' Orte ohne Kartenpunkt';
-  if (fit) { if (pts.length > 1) { const bd = new google.maps.LatLngBounds(); pts.forEach(p => bd.extend(p)); MAP.fitBounds(bd, { top: 90, bottom: 70, left: 40, right: 40 }); google.maps.event.addListenerOnce(MAP, 'idle', () => { if (MAP.getZoom() > 15) MAP.setZoom(15); }); }
+  if (fit) { if (pts.length > 1) { const bd = new google.maps.LatLngBounds(); pts.forEach(p => bd.extend(p)); MAP.fitBounds(bd, { top: 80, bottom: 190, left: 56, right: 56 }); google.maps.event.addListenerOnce(MAP, 'idle', () => { if (MAP.getZoom() > 15) MAP.setZoom(15); }); }
     else if (pts.length) { MAP.setCenter(pts[0]); MAP.setZoom(13); } else { MAP.setCenter({ lat: 48, lng: 11 }); MAP.setZoom(4); } } }
-$('mapv').addEventListener('click', e => { const f = e.target.closest('[data-mf]'); if (f) { if (mapF === f.dataset.mf) return; mapF = f.dataset.mf; $('mseg').querySelectorAll('[data-mf]').forEach(b => { b.classList.toggle('on', b === f); b.setAttribute('aria-pressed', b === f); }); mapPearl(true); paintMap(true); return; }
+$('mapv').addEventListener('click', e => {
   const g = e.target.closest('[data-mgo]'); if (g) { const id = g.dataset.mgo; closeMap(); setTimeout(() => goToCard(id), 360); return; }
   if (e.target.closest('#mclose')) closeMap(); });
 
@@ -2205,10 +2208,13 @@ if (CSS.supports('transition-timing-function', 'linear(0, 1)')) document.documen
 
 /* ---------- Reiter-Leiste ---------- */
 const bar = $('tbar'), trow = $('trow'), lens = $('lens'), pill = $('pill'), lensL = $('lensL'), lensR = $('lensR');
-let NT = TABS.length, barReady = false;
+let NT = TABS.length, barReady = false, barMap = false;
+// Auf der offenen Karte zeigt dieselbe Leiste die Filter (Wunsch Lars 17.11.2026: unten, wie die Reiter-Leiste)
+const MAPTABS = () => [['all', 'Alle'], ['act', 'Aktivitäten'], ['food', 'Essen'], ['mine', 'Meine']].filter(([k]) => k !== 'food' || areas().food);
+const BAR = () => barMap ? MAPTABS() : TABS;
 // Reiter je nach Bereichen der Reise (Aktivitäten immer; Essen, Kosten, Mein Plan wählbar)
-function buildBar() { NT = TABS.length; trow.innerHTML = TABS.map(([k, n]) => `<button class="tab" type="button" data-t="${k}">${ICF[k]}<span>${n}</span></button>`).join('');
-  lens.innerHTML = lensL.innerHTML = lensR.innerHTML = TABS.map(([k, n]) => `<div class="tab" data-t="${k}">${ICF[k]}<span>${n}</span></div>`).join(''); if (barReady) geo(); }
+function buildBar() { const L = BAR(); NT = L.length; trow.innerHTML = L.map(([k, n]) => `<button class="tab" type="button" data-t="${k}">${ICF[k]}<span>${n}</span></button>`).join('');
+  lens.innerHTML = lensL.innerHTML = lensR.innerHTML = L.map(([k, n]) => `<div class="tab" data-t="${k}">${ICF[k]}<span>${n}</span></div>`).join(''); if (barReady) geo(); }
 let W = 347, tw = 84;
 // Uhr-App nachgemessen: Die vordere Kante der Lupe springt sofort zum neuen Reiter, die hintere schnappt ca. 45 ms später nach. Deshalb zwei Federn.
 const XL = new Spring(0, 1750, .86, .3), XR = new Spring(0, 1750, .86, .3), Lf = new Spring(0, 600, .72, .004);
@@ -2223,7 +2229,7 @@ function aim(l, stretch) { trailT = 0; aimL = l; const r = l + tw, cur = (XL.x +
 function geo() { const lc = document.documentElement.classList.contains('lc'); W = Math.min(Math.max(innerWidth - 28 - (lc ? 74 : 0), 220), 420, NT * 104 + 10); tw = (W - 10) / NT;
   if (lc) { const L = Math.max(14, (innerWidth - W - 74) / 2); bar.style.left = L + 'px'; $('fab').style.left = (L + W + 10) + 'px'; } else bar.style.left = '';
   bar.style.setProperty('--W', W + 'px'); pill.style.width = tw + 'px'; mark(); trailT = 0; XL.t = idx() * tw; XR.t = XL.t + tw; XL.snap(); XR.snap(); drawBar(); }
-const idx = () => Math.max(0, TABS.findIndex(t => t[0] === tab));
+const idx = () => Math.max(0, BAR().findIndex(t => t[0] === (barMap ? mapF : tab)));
 function mark() { for (const r of [trow, lens, lensL, lensR]) [...r.children].forEach((b, i) => { b.classList.toggle('on', i === idx()); if (r === trow) b.setAttribute('aria-current', i === idx() ? 'page' : 'false'); }); }
 let raf = 0, last = 0;
 function kick() { if (calm()) { XL.snap(); XR.snap(); Lf.snap(); drawBar(); return; } if (!raf) { last = performance.now(); raf = requestAnimationFrame(tick); } }
@@ -2246,7 +2252,8 @@ function drawBar() {
   for (let i = 0; i < kids.length; i++) { const t0 = 5 + i * tw, t1 = t0 + tw, k = kids[i];
     k.style.clipPath = B <= t0 || A >= t1 ? '' : A <= t0 && B >= t1 ? 'inset(0 100% 0 0)' : A > t0 ? `inset(0 ${(t1 - A).toFixed(1)}px 0 0)` : `inset(0 0 0 ${(B - t0).toFixed(1)}px)`; }
 }
-function select(k) { if (k === tab) { scrollTo({ top: 0, behavior: calm() ? 'auto' : 'smooth' }); return; }
+function select(k) { if (barMap) return mapFilter(k);
+  if (k === tab) { scrollTo({ top: 0, behavior: calm() ? 'auto' : 'smooth' }); return; }
   mark(); navTo('tab', () => { tab = k; F = null; Cf = null; Rv = null; shownNew = new Set(); if (k === 'food') foodView = 'sug'; tabSw = true; draw(true); scrollTo(0, 0); }); }
 let drag = null;
 const glowAt = e => { const r = bar.getBoundingClientRect(); bar.style.setProperty('--gx', (e.clientX - r.left) + 'px'); bar.style.setProperty('--gy', (e.clientY - r.top) + 'px'); };
@@ -2263,7 +2270,7 @@ bar.addEventListener('pointermove', e => { if (!drag || e.pointerId !== drag.id)
   if (Math.abs(e.clientX - drag.x0) > 6) drag.moved = true; if (drag.moved) { const l = follow(e.clientX); if (Math.abs(l - drag.l) > 1.5) holdSoon(); drag.l = l; if (Lf.t < 1) { Lf.set(500, .9); Lf.t = 1; } aim(drag.l, false); } });
 function up(e) { if (!drag || e.pointerId !== drag.id) return; clearTimeout(holdT); bar.classList.remove('down', 'held');
   const i = Math.max(0, Math.min(NT - 1, Math.round(drag.l / tw))), moved = drag.moved;
-  drag = null; if (moved || Math.abs(aimL - i * tw) > 1) aim(i * tw, !moved); const k = TABS[i][0]; requestAnimationFrame(() => select(k));   // Seite erst nach dem nächsten Bild neu aufbauen, damit die Lupe ohne Stocken losgleitet
+  drag = null; if (moved || Math.abs(aimL - i * tw) > 1) aim(i * tw, !moved); const k = BAR()[i][0]; requestAnimationFrame(() => select(k));   // Seite erst nach dem nächsten Bild neu aufbauen, damit die Lupe ohne Stocken losgleitet
   setTimeout(() => { if (!drag) { Lf.set(800, 1); Lf.t = 0; kick(); } }, 140); }   // Glas bleibt kurz stehen, dann zurück zur Pille (Uhr-App ~0,13 s + 0,1 s)
 bar.addEventListener('pointerup', up); bar.addEventListener('pointercancel', up);
 trow.addEventListener('click', e => { if (e.detail !== 0) return; const b = e.target.closest('.tab'); if (!b) return; select(b.dataset.t); XL.t = idx() * tw; XR.t = XL.t + tw; kick(); });   // Tastatur

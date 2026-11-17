@@ -85,7 +85,7 @@ Stand: 10.11.2026. **Vorlage mit allen Mustern zum Abschauen: `vorlagen/glas-pro
 
 - **Umschalter** (Reise-Info, Essen): Kapsel mit gleitender Perle (`.seg2`/`.ind2`, Position per `translate`, Feder-Kurve), wie der abgenommene Umschalter der Vorlage. Auf der Karte als Glas (`.mseg`), weil sie über dem Inhalt schwebt.
 - **Schalter** (Bereiche): iOS-Schalter 51×31, an = Systemgrün.
-- **Karte**: Vollbild, wächst per `transform: scale` aus dem Karte-Knopf, Inhalt weicht auf 94 % zurück; nur transform/opacity. Schließen-Knopf und Filter schweben als Glas.
+- **Karte**: Vollbild, wächst per `transform: scale` aus dem Karte-Knopf, Inhalt weicht auf 94 % zurück; nur transform/opacity. Schließen-Knopf schwebt oben links als Glas. **Filter unten in der Reiter-Leiste selbst** (Lars 17.11.2026, Daumennähe wie Apple seit iOS 26): dieselbe Leiste mit Pille und Lupe, Einträge Alle · Aktivitäten · Essen · Meine mit gefüllten Symbolen. Googles Logo und Hinweise stehen über der Leiste.
 - Knöpfe, die auf dem Verlauf im Kopf liegen, haben den Kachel-Grund (sonst zu blass).
 
 - **Laden** (Wunsch Lars 11.11.2026): Startbildschirm mit Schriftzug „outbndr.“, der Punkt hüpft leise (steht schon im HTML, erscheint also vor dem Programm; nach 6 s „Einen Moment, wir packen noch.“, nach 15 s „Die Verbindung ist gerade langsam.“ + Neu laden). Beim Öffnen einer Reise: Name, Zeitraum und Stimmung sofort aus der gemerkten Liste, der Rest als Platzhalter in Form der echten Kacheln mit wanderndem Glanz (nur transform, bei „Bewegung reduzieren“ ohne). Nach 8 s Hinweis „Dauert etwas länger“ mit „Nochmal“, nach 20 s „Keine Verbindung“. Wetter lädt als Platzhalter-Kacheln, Karte zeigt „Karte lädt …“. Offline: Glas-Hinweis oben, Änderungen gehen raus, sobald wieder Netz da ist.
