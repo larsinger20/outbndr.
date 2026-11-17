@@ -546,6 +546,7 @@ main.wash .mapb{background:var(--card)}
 .gpin::after{content:'';position:absolute;inset:-7px}   /* Tippfläche 44 */
 .gpop{position:absolute;width:min(280px,calc(100vw - 32px));transform:translate(-50%,calc(-100% - 24px));padding:14px 16px;border-radius:20px;background:var(--card);color:var(--tx);box-shadow:0 10px 30px rgba(0,0,0,.25);font:15px/1.33 var(--font);cursor:default}
 .gpop::after{content:'';position:absolute;left:50%;bottom:-7px;width:14px;height:14px;background:var(--card);transform:translateX(-50%) rotate(45deg);border-radius:2px}
+@media (prefers-color-scheme:dark){.gpop,.gpop::after{background:#2c2c2e}}   /* im Dunkeln heller als die Karte (Apples erhöhte Fläche) */
 .gpop b{display:block;font-size:17px;font-weight:600;margin-bottom:2px}
 .gpop .mpb{display:flex;gap:8px;margin-top:10px}
 .gpop .mpb a,.gpop .mpb button{flex:1;min-height:44px;border-radius:999px;background:var(--btn);color:var(--ac);font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;text-decoration:none;white-space:nowrap;padding:0 12px}
@@ -2100,7 +2101,7 @@ function menuFor(btn) { const k = btn.dataset.menu;
 /* ---------- Karte (Google Maps, Wunsch Lars 17.11.2026; vorher Leaflet + CARTO, die seit Nov. 2026 einen Schlüssel verlangen) ----------
    Schlüssel aus Lars' Google-Cloud-Projekt; er ist in der Seite sichtbar und darum bei Google auf larsinger20.github.io und die Maps JavaScript API beschränkt.
    Pins und Info-Kachel sind eigene HTML-Ebenen (OverlayView), damit sie wie die übrige App aussehen und keine Map-ID nötig ist. */
-const GMAPS_KEY = '';
+const GMAPS_KEY = 'AIzaSyC3PGB_MNnTcbf5M8KrI2Hwjr5Uygw5bEM';   // von Lars (17.11.2026), bei Google auf larsinger20.github.io beschränkt
 let MAP = null, mapF = 'all', mapLayer = [], mapBtn = null, gmP = null, mapPop = null, GPin = null, mapErrd = false;
 // Dunkle Karte ohne Map-ID (Stil nach Googles Vorlage „Night“, ruhiger)
 const GDARK = [{ elementType: 'geometry', stylers: [{ color: '#1d1f22' }] }, { elementType: 'labels.text.stroke', stylers: [{ color: '#1d1f22' }] }, { elementType: 'labels.text.fill', stylers: [{ color: '#8e9095' }] },
