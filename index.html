@@ -55,6 +55,7 @@ main.tabs{padding-bottom:calc(130px + env(safe-area-inset-bottom,0px))}
 .wm i{font-style:normal;color:var(--ac)}
 h1{font-size:34px;font-weight:700;line-height:1.15;margin:0;text-wrap:balance}
 h1,h3,.go,.btn,.add,.cd{font-family:var(--rnd)}
+h1,h2,h3,.hn{-webkit-hyphens:auto;hyphens:auto}   /* lange Wörter mit Trennstrich statt mitten im Wort umbrechen */
 .sub{font-size:15px;line-height:1.33;color:var(--mu);margin:4px 0 0}
 .hd{margin-bottom:18px}
 /* Kopf der Reise: Der Verlauf der Stimmung füllt den oberen Bildschirm und läuft weich in den Grund aus (Farbe gehört in den Inhalt; die Glas-Leisten nehmen sie auf) */
@@ -123,6 +124,9 @@ a.txl::after{content:'';position:absolute;inset:-8px -4px}
 .av i,.pa{width:26px;height:26px;border-radius:50%;border:2px solid var(--card);margin-left:-7px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:11px;font-weight:600;color:#fff;flex:none}
 .av i:first-child{margin-left:0}
 .nm{flex:1;min-width:0;font-size:15px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nm:has(.n1){display:flex}.nm .n1{min-width:0;overflow:hidden;text-overflow:ellipsis}.nm .n2{flex:none}.nm .n2s{display:none}
+.nm .n3{display:none}
+@media (max-width:360px){.nm .n1b{display:none}.nm .n2s{display:inline}.ft .av i:nth-child(n+4){display:none}.nm:has(.n2:not(.n2s)) .n1,.nm .n2:not(.n2s){display:none}.nm .n3{display:inline}}
 .go{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;min-height:36px;border-radius:999px;font-size:15px;font-weight:600;background:var(--btn);color:var(--ac);white-space:nowrap;font-variant-numeric:tabular-nums;flex:none}
 .go::after{content:'';position:absolute;inset:-4px}
 .go svg,.btn svg,.add svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;flex:none}
@@ -202,11 +206,11 @@ select.fi{padding-right:38px;background-image:url("data:image/svg+xml,%3Csvg xml
 .cm b{font-weight:600}
 .cm small{color:var(--mu);font-size:13px;margin-left:6px;white-space:nowrap}
 .cmx{width:28px;height:28px;flex:none;position:relative;display:flex;align-items:center;justify-content:center;color:var(--mu)}
-.cmx::after{content:'';position:absolute;inset:-8px 0 -8px -8px}
+.cmx::after{content:'';position:absolute;inset:-8px}
 .cmx svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
 .cma{display:flex;gap:8px;align-items:flex-end;margin-top:6px;border-radius:22px;background:var(--fill);padding:2px 4px 2px 14px}
 .cma:focus-within{box-shadow:inset 0 0 0 2px var(--ac)}
-.cma textarea{flex:1;min-width:0;border:0;background:none;outline:0;color:var(--tx);font:17px/1.29 var(--font);padding:9px 0;resize:none;height:40px;max-height:132px;overflow-y:auto;display:block}
+.cma textarea{flex:1;min-width:0;border:0;background:none;outline:0;color:var(--tx);font:17px/1.29 var(--font);padding:11px 0;resize:none;height:44px;max-height:132px;overflow-y:auto;display:block}
 .cma button{margin-bottom:2px}
 .cma input{flex:1;min-width:0;border:0;background:none;outline:0;color:var(--tx);font:17px/1.29 var(--font);min-height:40px;padding:0}
 .cma button{width:36px;height:36px;border-radius:50%;background:var(--acb);color:#fff;display:flex;align-items:center;justify-content:center;flex:none;position:relative}
@@ -311,7 +315,7 @@ main.rcl.mst{animation:none}
 .dlgb{width:min(300px,100%);padding:22px 18px 16px;border-radius:30px;color:var(--tx);background:var(--dlg);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);box-shadow:var(--mrim),0 20px 60px rgba(0,0,0,.3);animation:dPop .26s cubic-bezier(.32,.72,0,1)}
 .dlgb b{display:block;font-size:17px;font-weight:600;line-height:1.29;margin:0 4px 4px}
 .dlgb p{margin:0 4px;font-size:15px;line-height:1.33}
-.dlgf{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.dlgf.one{grid-template-columns:1fr}
+.dlgf{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.dlgf.one{grid-template-columns:1fr}.dlgf.v{grid-template-columns:1fr}.dlgf.v [data-yes]{order:-1}   /* lange Knöpfe untereinander wie bei Apple, die Hauptaktion oben */
 .dlgf button{min-height:48px;border-radius:999px;font-size:17px;font-weight:600;background:var(--btn);color:var(--tx)}
 .dlgf .y{background:var(--acb);color:#fff}.dlgf .y.dz{background:var(--mrdb,var(--mrd));color:#fff}
 .dlg.out{animation:dOut .18s ease-in forwards}
@@ -411,7 +415,8 @@ main.wash .seg2{background:color-mix(in srgb,var(--card) 60%,transparent)}
 .chipx button::after{content:'';position:absolute;inset:-8px}
 .chipx svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
 /* Ort und Reservierung in der Kachel */
-.pl{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:15px;font-weight:600;color:var(--ac);text-decoration:none;min-height:30px}
+.pl{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:15px;font-weight:600;color:var(--ac);text-decoration:none;min-height:30px;position:relative}
+.pl::after{content:'';position:absolute;inset:-7px 0}
 .rsv{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:15px;color:var(--tx)}
 .rsv svg{width:18px;height:18px;flex:none;fill:none;stroke:var(--ac);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .rvf{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
@@ -455,8 +460,9 @@ main.wash .seg2{background:color-mix(in srgb,var(--card) 60%,transparent)}
 @media (prefers-reduced-motion:reduce){.si .tx{transition:none}.si.tk.ok .tick,.si.tk.ok .tick svg *{animation:none}}
 .sadd{display:flex;gap:8px;align-items:center;margin-top:6px;border-radius:999px;background:var(--fill);padding:2px 4px 2px 14px}
 .sadd:focus-within{box-shadow:inset 0 0 0 2px var(--ac)}
-.sadd input{flex:1;min-width:0;border:0;background:none;outline:0;color:var(--tx);font:17px/1.29 var(--font);min-height:40px;padding:0}
-.sadd button{width:36px;height:36px;border-radius:50%;background:var(--acb);color:#fff;display:flex;align-items:center;justify-content:center;flex:none}
+.sadd input{flex:1;min-width:0;border:0;background:none;outline:0;color:var(--tx);font:17px/1.29 var(--font);min-height:44px;padding:0}
+.sadd button{width:36px;height:36px;border-radius:50%;background:var(--acb);color:#fff;display:flex;align-items:center;justify-content:center;flex:none;position:relative}
+.sadd button::after{content:'';position:absolute;inset:-4px}
 .sadd button svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .chips button{padding:6px 12px;min-height:36px;border-radius:999px;background:var(--btn);color:var(--ac);font-size:15px;font-weight:500;position:relative}
@@ -517,6 +523,7 @@ main.wash .seg2{background:color-mix(in srgb,var(--card) 60%,transparent)}
 .zrow small{font-size:15px;color:var(--mu);min-width:0}main.wash .zrow small{color:var(--tx)}
 .zsel{display:inline-flex;align-items:center;gap:6px;min-height:36px;max-width:65%;margin-left:auto;padding:0 14px;border-radius:999px;background:var(--btn);color:var(--ac);font-size:15px;font-weight:600}
 main.wash .zsel{background:var(--card)}
+.zsel::after{content:'';position:absolute;inset:-4px 0}
 .zrow .zsel.zl{margin-left:0;flex:none}.zrow .zsel{max-width:60%}
 .zsel span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .zsel svg{width:11px;height:7px;flex:none;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
@@ -562,6 +569,7 @@ main.wash .btn.g{background:var(--card)}
 .krow .gr b{white-space:normal;overflow:visible}
 .txb svg{width:11px;height:7px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;margin-left:4px;vertical-align:1px;transition:rotate .3s}
 .txb[aria-expanded=true] svg{rotate:180deg}
+.txb.sm{position:relative;min-height:0}.txb.sm::after{content:'';position:absolute;inset:-13px -8px}
 .cmx.up svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .rowb{display:flex;align-items:center;gap:12px;flex:1;min-width:0;text-align:left;min-height:44px;border-radius:12px}
 #mclose{position:static!important;flex:none}
@@ -804,7 +812,7 @@ function toast(t) { flushUndo(); document.querySelector('.toast')?.remove(); con
 function ask({ t, m = '', ok = 'OK', no = 'Abbrechen', danger = false, one = false }) {
   if (document.querySelector('.dlg:not(.out)')) return Promise.resolve(false);   // nie zwei Nachfragen übereinander
   return new Promise(res => {
-    document.body.insertAdjacentHTML('beforeend', `<div class="dlg"><div class="dlgb" role="alertdialog" aria-modal="true"><b>${esc(t)}</b>${m ? `<p>${esc(m)}</p>` : ''}<div class="dlgf${one ? ' one' : ''}">${one ? '' : `<button type="button" data-no>${esc(no)}</button>`}<button type="button" class="y${danger ? ' dz' : ''}" data-yes>${esc(ok)}</button></div></div></div>`);
+    document.body.insertAdjacentHTML('beforeend', `<div class="dlg"><div class="dlgb" role="alertdialog" aria-modal="true"><b>${esc(t)}</b>${m ? `<p>${esc(m)}</p>` : ''}<div class="dlgf${one ? ' one' : ok.length + no.length > 22 ? ' v' : ''}">${one ? '' : `<button type="button" data-no>${esc(no)}</button>`}<button type="button" class="y${danger ? ' dz' : ''}" data-yes>${esc(ok)}</button></div></div></div>`);
     const d = document.body.lastElementChild, done = v => { document.removeEventListener('keydown', key); d.classList.add('out'); setTimeout(() => d.remove(), 190); res(v); };
     const key = e => { if (e.key === 'Escape') done(false); };
     document.addEventListener('keydown', key);
@@ -879,6 +887,13 @@ const cmOpen = new Set(), cmDraft = {}, shopOpen = new Set(), shopDraft = {}, su
 const dOpen = { act: false, food: false }; let archOpen = false;
 let pending = false, flash = null, shownNew = new Set(), flipNext = false, flipKeyLast = '', tabSw = false;
 const PS = {};         // Ortssuche je Feld: { res, q }
+// Offene Formulare einer Reise bleiben beim Verlassen erhalten (auch bei Safaris Zurück-Geste) und sind beim nächsten Öffnen wieder da
+const drafts = {}; let restoreDraft = false;
+// Getipptes verwerfen nur nach Nachfrage (wie iOS „Änderungen verwerfen?“); Vergleich mit dem Stand beim Öffnen des Formulars
+const formSnap = o => JSON.stringify(o, (k, v) => ['err', 'derr', 'perr', 'o0', 'pq'].includes(k) ? undefined : v);
+const isDirty = o => !!o && o.o0 != null && formSnap(o) !== o.o0;
+const baseline = o => { if (o && o.o0 == null) o.o0 = formSnap(o); };
+const keepOrDrop = o => isDirty(o) ? ask({ t: 'Änderungen verwerfen?', m: 'Was du eingegeben hast, geht dann verloren.', ok: 'Verwerfen', no: 'Weiter bearbeiten', danger: true }) : Promise.resolve(true);
 
 /* ---------- Adressen: #/ Start · #/neu · #/e/{reise}/{schlüssel} Einladung · #/r/{reise}[/leute|/profil|/stimmung|/reise] ---------- */
 // Verlauf wie die Seiten: Zurück geht wirklich einen Schritt zurück (auch Safaris Wisch-Geste landet dann richtig),
@@ -889,7 +904,7 @@ function noGlow() { const R = document.documentElement; document.querySelectorAl
 const go = (h, drawn) => { if (!drawn && !document.hidden) { noGlow(); dropMenu(); return requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(() => go(h, true), 50))); }   // erst wechseln, wenn das Bild ohne Schein sicher auf dem Bildschirm ist
   if (location.hash === h) return route();
   if (stack.length > 1 && h === stack[stack.length - 2]) { ownBack = true; history.back(); setTimeout(() => { if (location.hash !== h && ownBack) location.hash = h; }, 450); return; }   // Sicherheitsnetz, falls der Verlauf woanders hinführt
-  if (lastHash != null && depth(h) <= depth(lastHash) && depth(h) > 0) { ownRep = true; location.replace(h); } else location.hash = h; };
+  if (lastHash != null && depth(h) > 0 && (depth(h) < depth(lastHash) || depth(h) === depth(lastHash) && depth(h) !== 2 && !/^#\/neu/.test(h))) { ownRep = true; location.replace(h); } else location.hash = h; };   // gleich tiefe Unterseiten und Assistent-Schritte: neuer Eintrag (Zurück führt genau dorthin zurück)
 // Zurück-Knopf: eine Ebene höher (wie iOS); nur Stimmung aus „Reise bearbeiten“ führt dorthin zurück
 function backTarget() { const h = location.hash, d = depth(h), prev = stack[stack.length - 2];
   if (prev != null && (depth(prev) < d || d === 2 && depth(prev) === 2)) return prev;
@@ -963,11 +978,15 @@ function route() { noGlow(); const h = location.hash, d0 = lastHash == null ? nu
   ownBack = false; ownRep = false; lastHash = h; navTo(dir, routeNow); }
 function routeNow() {
   const p = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
-  closeMenu(); closeMap(true); F = null; Pf = null; Cf = null; Rv = null;
+  closeMenu(); closeMap(true);   // offene Formulare der Reise bleiben (F, Cf, Rv); beim Verlassen der Reise merkt sie sich closeTrip
   if (p[0] === 'mit') { const c = parseCarry(location.hash); if (c && c.length) takeCarry(c); return location.replace('#/'); }
-  if (p[0] === 'neu') { if (!Wz) Wz = newWizard(); view = { n: 'new' }; }
+  if (p[0] === 'neu') { if (!Wz) Wz = newWizard(); const L = WSTEPS.length - 1; let n = p[1] ? +p[1] : 0;
+    if (Wz.t && n !== L) { Wz = null; view = { n: 'home' }; location.replace('#/'); }   // Reise schon angelegt: zurück vor den Link-Schritt hieße doppelt anlegen
+    else { if (!(Number.isInteger(n) && n >= 0 && n <= (Wz.reach || 0) && (n !== L || Wz.t))) { n = 0; const h0 = wizHash(0); history.replaceState(history.state, '', h0); lastHash = h0; stack[stack.length - 1] = h0; }   // nach Neuladen oder fremder Adresse: von vorn, Eingaben bleiben
+      Wz.step = n; Wz.err = ''; view = { n: 'new' }; } }
   else if (p[0] === 'e' && p[1] && p[2]) { view = { n: 'join' }; startJoin(p[1], p[2]); }
-  else if (p[0] === 'r' && p[1]) { view = { n: (Object.hasOwn(SUB, p[2] || '') && SUB[p[2]]) || 'trip' }; if (view.n !== 'edit' && view.n !== 'mood') Ed = null; openTrip(p[1]); }
+  else if (p[0] === 'r' && p[1]) { view = { n: (Object.hasOwn(SUB, p[2] || '') && SUB[p[2]]) || 'trip' }; const same = T && T.id === p[1];
+    if (view.n !== 'edit' && view.n !== 'mood' && !(same && Ed && (Ed.d || ndirty()))) Ed = null; if (view.n !== 'profile' && !(same && pdirty())) Pf = null; openTrip(p[1]); }   // Ungespeichertes in „Reise bearbeiten“ und im Profil bleibt, solange die Reise offen ist
   else { view = { n: 'home' }; }
   if (!['trip', 'people', 'profile', 'mood', 'edit', 'info'].includes(view.n)) closeTrip();
   draw(true); scrollTo(0, keepY || 0); keepY = null; topTitle();
@@ -975,9 +994,9 @@ function routeNow() {
 addEventListener('hashchange', route);
 
 /* ---------- Reise öffnen: erst prüfen, ob dieses Gerät dazugehört, dann live mitlesen ---------- */
-function closeTrip() { flushUndo(); if (T) { T.off.forEach(f => f()); T = null; cmOpen.clear(); shopOpen.clear(); kOpen.clear(); stopF = ''; sortF = { act: '', food: '' }; planPast = false; infoOpen = false; } }
+function closeTrip() { flushUndo(); if (T) { if (F || Cf || Rv) drafts[T.id] = { F, Cf, Rv, tab, foodView }; F = Cf = Rv = Pf = Ed = null; T.off.forEach(f => f()); T = null; cmOpen.clear(); shopOpen.clear(); kOpen.clear(); stopF = ''; sortF = { act: '', food: '' }; planPast = false; infoOpen = false; } }
 async function openTrip(id) {
-  if (T && T.id === id) return; closeTrip(); tab = 'act'; foodView = 'sug';   // jede Reise öffnet mit Aktivitäten
+  if (T && T.id === id) return; closeTrip(); tab = 'act'; foodView = 'sug'; takeDraft(id); if (barReady) geo();   // jede Reise öffnet mit Aktivitäten (oder dort, wo ein offenes Formular wartet); geo setzt die Pille sofort auf den Reiter
   const t = T = { id, t0: Date.now(), st: 'load', me: null, info: null, people: null, acts: null, sig: null, costs: null, gen: {}, tok: null, toks: [], off: [] };
   [8100, 20100].forEach(ms => setTimeout(() => { if (T === t && t.st === 'load') draw(); }, ms)); setTimeout(() => { if (T === t) selfHeal(t); }, 6000);
   if (!db) return;
@@ -1001,7 +1020,7 @@ function keepPeople(id, t) { const pp = Object.entries(t.people).sort((a, b) => 
 // nach 6 s einmal selbst neu laden, höchstens alle 2 Minuten, damit nichts im Kreis lädt
 function selfHeal(o) { if (o.st !== 'load' || offline() || document.hidden) return; let last = 0; try { last = +sessionStorage.getItem('outbndr.rl') || 0; } catch (e) {}
   if (Date.now() - last < 12e4) return; try { sessionStorage.setItem('outbndr.rl', String(Date.now())); } catch (e) { return; } location.reload(); }
-function live(t) { if (T !== t) return; if (t.info && t.people && t.acts && t.sig && t.costs) { t.st = 'ok'; draw(); maybeTour(); } else t.stage = 'Daten (' + [['Reise', t.info], ['Mitreisende', t.people], ['Vorschläge', t.acts], ['Stimmen', t.sig], ['Kosten', t.costs]].filter(x => !x[1]).map(x => x[0]).join(', ') + ')'; }
+function live(t) { if (T !== t) return; if (t.info && t.people && t.acts && t.sig && t.costs) { t.st = 'ok'; draw(); if (restoreDraft) showDraft(); maybeTour(); } else t.stage = 'Daten (' + [['Reise', t.info], ['Mitreisende', t.people], ['Vorschläge', t.acts], ['Stimmen', t.sig], ['Kosten', t.costs]].filter(x => !x[1]).map(x => x[0]).join(', ') + ')'; }
 // Gerät gehört (noch) nicht dazu: mit gemerktem Link zum Beitritt, sonst um den Link bitten
 function needJoin(t) { t.off.forEach(f => f()); t.off = []; const l = LS.one(t.id); if (l && l.tok) { T = null; go('#/e/' + t.id + '/' + l.tok); } else { t.st = 'nolink'; draw(); } }
 const areas = () => ({ food: true, shop: true, cost: true, plan: true, map: true, ...((T && T.info && T.info.areas) || {}) });
@@ -1009,7 +1028,11 @@ const shopOn = () => { const a = areas(); return !!(a.food && a.shop); };   // E
 const stops = () => ((T && T.info && T.info.stops) || []).filter(s => s && s.name);
 // Reiter je nach gewählten Bereichen; Wechsel baut die Leiste neu
 function setTabs() { const a = areas(), next = ALLTABS.filter(([k]) => k === 'act' || a[k]); if (next.map(x => x[0]).join() !== TABS.map(x => x[0]).join()) { TABS = next; buildBar(); }
-  if (!TABS.some(x => x[0] === tab)) { tab = 'act'; } }
+  if (!TABS.some(x => x[0] === tab)) { tab = 'act'; if (barReady) geo(); } }
+
+function takeDraft(id) { const d = drafts[id]; if (!d) return; delete drafts[id]; ({ F, Cf, Rv } = d); tab = d.tab; foodView = d.foodView; restoreDraft = true; }
+// Wiederhergestelltes Formular ins Bild holen (beim Bearbeiten steht es mitten in der Liste)
+function showDraft() { restoreDraft = false; if (view.n !== 'trip') return; draw(true); const el = document.querySelector('#app #form, #app #cform, #app .rvw'); if (el && F && F.id === 'new' && !Cf && !Rv) return; if (el) glideTo(el.getBoundingClientRect().top + scrollY - topGap() - 10); }
 
 /* ---------- Beitritt über den Einladungs-Link ---------- */
 async function startJoin(t, tok) {
@@ -1050,7 +1073,10 @@ function jerr(m) { J.err = m; draw(true); }
 
 /* ---------- Assistent „Reise planen“: eine Frage pro Bildschirm ---------- */
 const WSTEPS = ['name', 'when', 'where', 'stay', 'travel', 'areas', 'mood', 'who', 'link'];
-const newWizard = () => ({ step: 0, name: '', from: '', to: '', stops: [], travel: '', tnote: '', areas: { food: true, shop: true, cost: true, plan: true, map: true }, mood: 'meer', icon: '', me: '', pin: '', col: PALETTE[0], busy: false, err: '' });
+const wizHash = n => '#/neu' + (n ? '/' + n : '');
+const wizPrev = w => { let n = w.step - 1; if (WSTEPS[n] === 'stay' && !w.stops.length) n--; return Math.max(0, n); };
+function wizGo(n) { Wz.reach = Math.max(Wz.reach || 0, n); go(wizHash(n)); }
+const newWizard = () => ({ step: 0, reach: 0, name: '', from: '', to: '', stops: [], travel: '', tnote: '', areas: { food: true, shop: true, cost: true, plan: true, map: true }, mood: 'meer', icon: '', me: '', pin: '', col: PALETTE[0], busy: false, err: '' });
 async function createTrip() { const w = Wz; if (w.busy) return; const me = w.me.trim();
   if (!me) { w.err = 'Bitte gib deinen Namen ein.'; return draw(true); } if (!PIN_OK(w.pin)) { w.err = 'Die PIN braucht 4 bis 8 Ziffern.'; return draw(true); }
   if (!db) { w.err = 'outbndr ist noch nicht eingerichtet.'; return draw(true); }
@@ -1065,7 +1091,7 @@ async function createTrip() { const w = Wz; if (w.busy) return; const me = w.me.
     b.set(tdoc(t, 'members', uid), { inv: tok, pid, ph });
     await b.commit();
     LS.add({ id: t, name: w.name.trim(), from: w.from, to: w.from ? (w.to || w.from) : '', mood: w.mood, icon: iconOf(w.mood, w.icon), tok });
-    w.busy = false; w.t = t; w.tok = tok; navTo('push', () => { w.step = WSTEPS.indexOf('link'); draw(true); scrollTo(0, 0); });
+    w.busy = false; w.t = t; w.tok = tok; wizGo(WSTEPS.indexOf('link'));
   } catch (e) { console.error(e); w.busy = false; w.err = denied(e) ? 'Die Datenbank-Regeln sind noch nicht auf dem neuesten Stand. Bitte die Regeln aus firestore.rules in Firebase einfügen.' : FAIL; draw(true); }
 }
 // Stopp nur mit erlaubten Feldern speichern (kein Rest aus der Ortssuche)
@@ -1107,7 +1133,7 @@ function paintPs(key) { const el = document.querySelector(`#app [data-ps="${CSS.
 // Auswahl übernehmen: je Feld ein Ziel
 function pickPlace(key, x) { delete PS[key];
   if (key === 'wstop') { if (Wz.stops.length < MAXSTOPS) Wz.stops.push({ id: rid(8), name: x.name, lat: x.lat, lng: x.lng }); Wz.q = ''; }
-  else if (key === 'estop') { if ((T.info.stops || []).length >= MAXSTOPS) return draw(true); Ed.d = { id: rid(8), name: x.name, lat: x.lat, lng: x.lng, from: '', to: '', stay: {} }; Ed.kind = 'stop'; Ed.isNew = true; Ed.open = Ed.d.id; Ed.derr = ''; Ed.q = ''; draw(true); openForm('#app .edw'); return; }
+  else if (key === 'estop') { if (isDirty(Ed.d)) { keepOrDrop(Ed.d).then(ok => { if (ok) { Ed.d = null; pickPlace(key, x); } else draw(true); }); return; } if ((T.info.stops || []).length >= MAXSTOPS) return draw(true); Ed.d = { id: rid(8), name: x.name, lat: x.lat, lng: x.lng, from: '', to: '', stay: {} }; Ed.kind = 'stop'; Ed.isNew = true; Ed.open = Ed.d.id; Ed.derr = ''; Ed.q = ''; draw(true); openForm('#app .edw'); return; }
   else if (key === 'fplace' && F) { F.place = { name: x.name, lat: x.lat, lng: x.lng, addr: x.addr || '' }; F.pq = x.name; }
   else if (key.startsWith('stay-') && Ed && Ed.d) { Ed.d.stay = { ...(Ed.d.stay || {}), addr: [x.name, x.addr].filter(Boolean).join(', '), lat: x.lat, lng: x.lng }; }
   draw(true); }
@@ -1142,6 +1168,8 @@ const avs = (ids, n = 4) => `<span class="av">${ids.slice(0, n).map(id => `<i st
 const isAdmin = () => !!ME().admin;
 const canEdit = a => a.by === T.me || isAdmin();
 const nm = id => id === T.me ? 'Du' : P(id).name;
+// Neben dem Knopf ist wenig Platz: „Du, Ben“ bzw. „Du +4“; der erste Name kürzt sich notfalls, die Zahl bleibt immer sichtbar (schmal: „Du +1“)
+const crewHTML = ids => `<span class="n1">${esc(nm(ids[0]))}${ids.length === 2 ? `<span class="n1b">, ${esc(nm(ids[1]))}</span>` : ''}</span>${ids.length > 2 ? `<span class="n2">\u00a0+${ids.length - 1}</span>` : ids.length === 2 ? '<span class="n2 n2s">\u00a0+1</span>' : ''}${ids.length > 3 ? `<span class="n3">+${ids.length - 3}</span>` : ''}`;   // schmal (320): nur Kreise + wie viele nicht als Kreis zu sehen sind
 function names(ids) { const n = ids.map(nm); return n.length <= 2 ? n.join(', ') : n[0] + ' und ' + (n.length - 1) + ' weitere'; }
 const inField = () => { const a = document.activeElement; return a && $('app').contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName); };
 const sigBy = () => { const by = {}; for (const s of T.sig) (by[s.act] = by[s.act] || []).push(s.pid); return by; };
@@ -1164,6 +1192,7 @@ function draw(force) {
   const A = $('app'), key = view.n + '|' + (view.n === 'new' ? Wz.step : '') + '|' + (T ? T.st : '') + '|' + (J ? J.st : ''), fresh = key !== lastKey; lastKey = key;
   const act = document.activeElement, fk = act && A.contains(act) && act.dataset.k, sel = fk && act.selectionStart != null ? [act.selectionStart, act.selectionEnd] : null;
   const inTrip = view.n === 'trip' && T && T.st === 'ok';
+  if (inTrip) { if (F && F.id !== 'new' && !alive(F.id)) F = null; if (Rv && !alive(Rv.id)) Rv = null; if (Cf && Cf.id && !T.costs.some(c => c.id === Cf.id)) Cf = null; }
   // Listen gleiten statt zu springen: bei Live-Daten und wenn eine Aktion es anmeldet (flipNext); nicht beim Auf-/Zuklappen (das bewegt selbst)
   const fkey = inTrip ? T.id + '|' + tab + '|' + foodView : '', sn = (!force || flipNext) && !fresh && !tabSw && fkey && fkey === flipKeyLast ? flipSnap() : null; flipNext = false; flipKeyLast = fkey;
   const hadInfo = !!A.querySelector('.hinfo');
@@ -1337,11 +1366,11 @@ function cardHTML(a, by) { const food = a.cat === 'food', ids = by[a.id] || [], 
     <p class="inf">${esc(inf)}</p>${a.desc ? `<p class="desc">${linkify(a.desc)}</p>` : ''}
     ${a.place && a.place.name ? `<a class="pl" href="${esc(mapsUrl(a.place))}" target="_blank" rel="noopener">${SY.pin}<span>${esc(a.place.name)}</span></a>` : ''}
     ${a.res && (a.res.t || a.res.p) ? `<div class="rsv">${SY.clock}<span>Reserviert${a.res.t ? ' · ' + esc(a.res.t) + ' Uhr' : ''}${a.res.p ? ' · ' + esc(a.res.p) + (a.res.p == 1 ? ' Person' : ' Personen') : ''}</span></div>` : ''}
-    ${Rv && Rv.id === a.id ? `<div class="rvw"><div class="rvf"><div><label class="fl" for="rvt">Uhrzeit</label><input class="fi" id="rvt" type="time" data-k="rvt" data-o="rv" data-f="t" value="${esc(Rv.t)}"></div><div><label class="fl" for="rvp">Personen</label><input class="fi" id="rvp" type="number" inputmode="numeric" min="1" max="99" data-k="rvp" data-o="rv" data-f="p" value="${esc(Rv.p)}"></div></div>${Rv.err ? `<p class="err">${esc(Rv.err)}</p>` : ''}<div class="btns two"><button class="btn g s" type="button" data-a="rvx">${a.res ? 'Entfernen' : 'Abbrechen'}</button><button class="btn s" type="button" data-a="rvsave">Speichern</button></div></div>` : ''}
+    ${Rv && Rv.id === a.id ? `<div class="rvw"><div class="rvf"><div><label class="fl" for="rvt">Uhrzeit</label><input class="fi" id="rvt" type="time" data-k="rvt" data-o="rv" data-f="t" value="${esc(Rv.t)}"></div><div><label class="fl" for="rvp">Personen</label><input class="fi" id="rvp" type="number" inputmode="numeric" min="1" max="99" data-k="rvp" data-o="rv" data-f="p" value="${esc(Rv.p)}"></div></div>${Rv.err ? `<p class="err">${esc(Rv.err)}</p>` : ''}<div class="btns two"><button class="btn g s" type="button" data-a="rvx">Abbrechen</button><button class="btn s" type="button" data-a="rvsave">Speichern</button></div>${a.res ? '<button class="btn dz s" type="button" data-a="rvdel" style="margin-top:10px">Reservierung entfernen</button>' : ''}</div>` : ''}
     ${food && a.kind === 'cook' && !a.done && shopOn() ? shopBox(a) : ''}`;
   if (cms.length || open) h += `<div class="cmts${open ? ' open' : ''}"><button class="cmh" type="button" data-a="cm" aria-expanded="${open}"><span>${cms.length === 1 ? '1 Kommentar' : cms.length ? cms.length + ' Kommentare' : 'Kommentare'}${nCm && !open ? ` · <span style="color:var(--org)">${nCm} neu</span>` : ''}</span>${CHEV}</button>${open ? `<div class="cmb">${cms.map(([cid, c]) => `<div class="cm">${ava(P(c.by))}<p><b>${esc(nm(c.by))}</b><small>${esc(ago(c.ts || 0))}</small><br>${linkify(c.t)}</p>${c.by === T.me || isAdmin() ? `<button class="cmx" type="button" data-a="cmdel" data-c="${esc(cid)}" aria-label="Kommentar löschen">${SY.x}</button>` : ''}</div>`).join('')}
       <div class="cma"><textarea rows="1" data-k="cm-${esc(a.id)}" data-cmi maxlength="500" autocomplete="off" autocapitalize="sentences" enterkeyhint="send" placeholder="Kommentar schreiben" aria-label="Kommentar schreiben">${esc(cmDraft[a.id] || '')}</textarea><button type="button" data-a="cmsend" aria-label="Senden">${SY.send}</button></div></div>` : ''}</div>`;
-  h += `<div class="ft">${avs(sorted)}<span class="nm">${ids.length ? esc(names(sorted)) + (a.done ? (food ? '' : ids.length > 1 ? ' waren dabei' : mine ? ' warst dabei' : ' war dabei') : '') : (food ? 'Noch keine Stimme' : 'Noch niemand dabei')}</span>
+  h += `<div class="ft">${avs(sorted)}<span class="nm">${ids.length && !a.done ? crewHTML(sorted) : ids.length ? esc(names(sorted)) + (a.done ? (food ? '' : ids.length > 1 ? ' waren dabei' : mine ? ' warst dabei' : ' war dabei') : '') : (food ? 'Noch keine Stimme' : 'Noch niemand dabei')}</span>
     ${a.done ? `<span class="dn">${SY.check}Erledigt</span>` : `<button class="go lq${mine ? ' in' : ''}" type="button" data-a="go" aria-pressed="${mine}">${food ? `${SY.thumb}<span>${ids.length}</span>` : mine ? `${SY.check}<span>Du bist dabei</span>` : `${SY.join}<span>Ich bin dabei</span>`}<span class="gl"></span></button>`}</div></div></article>`;
   return h; }
 
@@ -1590,7 +1619,7 @@ function costForm() { const f = Cf, ppl = Object.entries(T.people).sort((a, b) =
   return `<div class="form" id="cform"><h3>${f.id ? 'Ausgabe bearbeiten' : 'Neue Ausgabe'}</h3><label class="fl" for="ct">Wofür?</label><input class="fi" id="ct" data-k="ct" data-o="cf" data-f="t" maxlength="80" autocapitalize="sentences" placeholder="z. B. Einkauf Grillabend" value="${esc(f.t)}">
     <div class="f2"><div><label class="fl" for="ca">Betrag in Euro</label><input class="fi" id="ca" data-k="ca" data-o="cf" data-f="amt" inputmode="decimal" placeholder="z. B. 42,50" value="${esc(f.amt)}"></div><div><label class="fl" for="cd">Datum</label><input class="fi" id="cd" type="date" data-k="cd" data-o="cf" data-f="dt" value="${esc(f.dt)}"></div></div>
     <label class="fl" for="cb">Wer hat bezahlt?</label><select class="fi" id="cb" data-k="cb" data-o="cf" data-f="by">${opts(f.by)}</select>
-    <span class="fl">Für wen? <button class="txb" type="button" data-a="call" style="min-height:0;margin-left:6px">${f.for.length === ppl.length ? 'Niemand' : 'Alle'}</button></span><div class="ch pp">${ppl.map(([id, p]) => `<button type="button" data-cfor="${esc(id)}" class="${f.for.includes(id) ? 'on' : ''}" aria-pressed="${f.for.includes(id)}"><i style="background:${esc(p.col)}">${ini(p)}</i>${esc(id === T.me ? 'Du' : p.name)}</button>`).join('')}</div>
+    <span class="fl">Für wen? <button class="txb sm" type="button" data-a="call" style="margin-left:6px">${f.for.length === ppl.length ? 'Niemand' : 'Alle'}</button></span><div class="ch pp">${ppl.map(([id, p]) => `<button type="button" data-cfor="${esc(id)}" class="${f.for.includes(id) ? 'on' : ''}" aria-pressed="${f.for.includes(id)}"><i style="background:${esc(p.col)}">${ini(p)}</i>${esc(id === T.me ? 'Du' : p.name)}</button>`).join('')}</div>
     ${f.own && f.for.length ? `<div class="shl">${ppl.filter(([id]) => f.for.includes(id)).map(([id, p]) => `<label class="shr"><span>${esc(id === T.me ? 'Du' : p.name)}</span><input class="fi" data-k="cs${esc(id)}" data-o="cfs" data-f="${esc(id)}" inputmode="decimal" placeholder="0,00" aria-label="Betrag für ${esc(p.name)}" value="${esc((f.sh || {})[id] || '')}"></label>`).join('')}</div>` : ''}
     <p class="hint" id="chint">${costHint(f)}</p>${f.for.length > 1 ? `<button class="txb" type="button" data-a="cown" style="margin-left:4px">${f.own ? 'Gleich teilen' : 'Eigene Beträge'}</button>` : ''}
     ${f.err ? `<p class="err">${esc(f.err)}</p>` : ''}<div class="btns two"><button class="btn g" type="button" data-a="cx">Abbrechen</button><button class="btn" type="button" data-a="csave">Speichern</button></div>${f.id && canDelCost(T.costs.find(c => c.id === f.id) || {}) ? `<button class="btn dz s" type="button" data-a="cdel" data-cid="${esc(f.id)}" style="margin-top:10px">Ausgabe löschen</button>` : ''}</div>`; }
@@ -1706,11 +1735,11 @@ function wizNext() { const w = Wz, s = WSTEPS[w.step]; w.err = '';
   if (s === 'when') { if (!w.from) { w.err = 'Bitte wähle den ersten Tag, oder tippe auf „Steht noch nicht fest“.'; return draw(true); } if (w.to && w.to < w.from) { w.err = 'Das Ende liegt vor dem Anfang.'; return draw(true); } }
   if (s === 'where' && (w.q || '').trim()) { if (w.stops.length < MAXSTOPS && !w.stops.some(x => norm(x.name) === norm(w.q))) w.stops.push({ id: rid(8), name: w.q.trim().slice(0, 60) }); w.q = ''; delete PS.wstop; }   // Getipptes ohne Auswahl zählt als Ziel (vorher ging es bei weiteren Zielen still verloren)
   if (s === 'stay') for (const x of w.stops) if (x.stay && x.stay.link && normLink(x.stay.link) === false) { w.err = `Der Link bei „${x.name}“ sieht nicht wie eine Internetadresse aus.`; return draw(true); }
-  navTo('push', () => { w.step++; if (WSTEPS[w.step] === 'stay' && !w.stops.length) w.step++; draw(true); scrollTo(0, 0); }); }
+  wizGo(w.step + (WSTEPS[w.step + 1] === 'stay' && !w.stops.length ? 2 : 1)); }
 function wizSkip() { const w = Wz, s = WSTEPS[w.step]; w.err = '';
   if (s === 'when') { w.from = w.to = ''; } if (s === 'stay') w.stops.forEach(x => delete x.stay); if (s === 'travel') { w.travel = ''; w.tnote = ''; }
   if (s === 'where' && (w.q || '').trim()) { if (w.stops.length < MAXSTOPS && !w.stops.some(x => norm(x.name) === norm(w.q))) w.stops.push({ id: rid(8), name: w.q.trim().slice(0, 60) }); w.q = ''; delete PS.wstop; }
-  navTo('push', () => { w.step++; if (WSTEPS[w.step] === 'stay' && !w.stops.length) w.step++; draw(true); scrollTo(0, 0); }); }
+  wizGo(w.step + (WSTEPS[w.step + 1] === 'stay' && !w.stops.length ? 2 : 1)); }
 function pasteGo() { const c = parseCarry(pasteVal); if (c && c.length) { pasteOpen = false; pasteVal = ''; pasteErr = ''; takeCarry(c); return draw(true); }
   const p = parseInvite(pasteVal); if (!p) { pasteOpen = true; pasteErr = pasteVal.trim() ? 'Das ist kein Einladungs-Link von outbndr.' : 'Bitte füg den Einladungs-Link ein.'; return draw(true); } pasteOpen = false; pasteVal = ''; pasteErr = ''; go('#/e/' + p.t + '/' + p.tok); }
 
@@ -1742,7 +1771,7 @@ $('app').addEventListener('click', async e => {
   const b = e.target.closest('[data-a]'); if (!b) return; const a = b.dataset.a, card = b.closest('[data-id]'), id = card && card.dataset.id;
   if (a === 'home') return go('#/');
   if (a === 'open') return go('#/r/' + id);
-  if (a === 'new') { Wz = null; return go('#/neu'); }
+  if (a === 'new') { if (Wz && Wz.t) Wz = null; return go('#/neu'); }   // angefangener Entwurf bleibt (bis zum Neuladen)
   if (a === 'paste') { if (APP && navigator.clipboard && navigator.clipboard.readText) { try { const t = await navigator.clipboard.readText(); if (parseInvite(t) || parseCarry(t)) { pasteVal = t; return pasteGo(); } } catch (e) {} }
     pasteOpen = true; draw(true); $('pl')?.focus(); return; }
   if (a === 'apphide') { store.set('outbndr.apphide', true); return draw(true); }
@@ -1766,7 +1795,7 @@ $('app').addEventListener('click', async e => {
   if (a === 'psave') return saveProfile();
   if (a === 'pinsave') return savePin();
   if (a === 'add') { F = { id: 'new', cat: tab === 'food' ? 'food' : 'act', title: '', desc: '', day: '', time: '', kind: '', place: null, stop: stopF }; draw(true); openForm('#form', '#ft'); return; }
-  if (a === 'fx') return closeForm('#form', () => { F = null; delete PS.fplace; });
+  if (a === 'fx') { if (!await keepOrDrop(F)) return; return closeForm('#form', () => { F = null; delete PS.fplace; }); }
   if (a === 'fsave') return saveAct();
   if (a === 'go' && id) return toggleGo(id);
   if (a === 'pfold') return foldRow(planPast, v => { planPast = v; }, '#app .ppast', '#app [data-a=pfold] svg');
@@ -1774,8 +1803,9 @@ $('app').addEventListener('click', async e => {
   if (a === 'cm' && id) { const o = cmOpen.has(id); if (!o) readCm(id); return foldRow(o, v => { v ? cmOpen.add(id) : (cmOpen.delete(id), delete cmDraft[id]); }, `#app [data-id="${id}"] .cmts:not(.shop) .cmb`, `#app [data-id="${id}"] .cmts:not(.shop) .cmh svg`); }
   if (a === 'cmsend' && id) return sendCm(id);
   if (a === 'cmdel' && id) { if (!await ask({ t: 'Kommentar löschen?', ok: 'Löschen', danger: true })) return; if (!alive(id)) return;
-    try { await updateDoc(tdoc(T.id, 'acts', id), { ['cm.' + b.dataset.c]: deleteField() }); toast('Gelöscht'); } catch (err) { console.error(err); toast(FAIL); } return; }
-  if (a === 'rvx') { const was = T.acts.find(x => x.id === id), del = was && was.res && b.textContent === 'Entfernen'; return closeForm(`#app [data-id="${id}"] .rvw`, () => { Rv = null; if (del) updateDoc(tdoc(T.id, 'acts', id), { res: deleteField() }).then(() => toast('Reservierung entfernt'), err => { console.error(err); toast(FAIL); }); }); }
+    try { await wrote(updateDoc(tdoc(T.id, 'acts', id), { ['cm.' + b.dataset.c]: deleteField() }), 'Gelöscht'); } catch (err) { console.error(err); toast(FAIL); } return; }
+  if (a === 'rvx') { if (!await keepOrDrop(Rv)) return; return closeForm(`#app [data-id="${id}"] .rvw`, () => { Rv = null; }); }
+  if (a === 'rvdel') { const t = T; return closeForm(`#app [data-id="${id}"] .rvw`, () => { Rv = null; if (alive(id)) wrote(updateDoc(tdoc(t.id, 'acts', id), { res: deleteField() }), 'Reservierung entfernt').catch(err => { console.error(err); toast(FAIL); }); }); }
   if (a === 'rvsave') return saveRes();
   // Einkaufsliste
   const sid = b.dataset.sid || (b.closest('[data-sid]') || {}).dataset?.sid, k2 = (b.closest('[data-k2]') || {}).dataset?.k2;
@@ -1790,11 +1820,11 @@ $('app').addEventListener('click', async e => {
     try { await updateDoc(tdoc(T.id, 'acts', sid), { noshop: true }); } catch (err) { console.error(err); toast(FAIL); } return; }
   if (a === 'sarch') return archShop();
   if (a === 'archt') return foldRow(archOpen, v => { archOpen = v; }, '#app .al', '#app [data-a=archt] svg');
-  if (a === 'sback') { try { await updateDoc(shopRef(sid), { ['shop.' + k2 + '.arch']: deleteField(), ['shop.' + k2 + '.ok']: false }); toast('Wieder auf der Liste'); } catch (err) { console.error(err); toast(FAIL); } return; }
+  if (a === 'sback') { try { await wrote(updateDoc(shopRef(sid), { ['shop.' + k2 + '.arch']: deleteField(), ['shop.' + k2 + '.ok']: false }), 'Wieder auf der Liste'); } catch (err) { console.error(err); toast(FAIL); } return; }
   // Kosten
   if (a === 'cadd') { Cf = { t: '', amt: '', dt: today(), by: T.me, for: Object.keys(T.people) }; draw(true); openForm('#cform', '#ct'); return; }
   if (a === 'cpay') { const o = Object.keys(T.people).find(x => x !== T.me) || T.me; Cf = { pay: true, amt: '', by: T.me, to: o }; draw(true); openForm('#cform'); return; }
-  if (a === 'cx') return closeForm('#cform', () => { Cf = null; });
+  if (a === 'cx') { if (!await keepOrDrop(Cf)) return; return closeForm('#cform', () => { Cf = null; }); }
   if (a === 'call') { Cf.for = Cf.for.length === Object.keys(T.people).length ? [] : Object.keys(T.people); return draw(true); }
   if (a === 'csave') return saveCost();
   if (a === 'cown') { Cf.own = !Cf.own; Cf.err = ''; return draw(true); }
@@ -1804,10 +1834,11 @@ $('app').addEventListener('click', async e => {
   if (a === 'kfold') { const k = b.dataset.k2; return foldRow(kOpen.has(k), v => { v ? kOpen.add(k) : kOpen.delete(k); }, `#app [data-kg="${k}"]`, `#app [data-k2="${k}"] svg`); }
   if (a === 'goto') return goToCard(b.dataset.aid);
   // Reise bearbeiten
-  if (a === 'sopen') { const id2 = b.closest('[data-stop]').dataset.stop, x = (T.info.stops || []).find(z => z.id === id2); if (!x) return; Object.assign(Ed, { kind: 'stop', open: id2, d: clone(x), isNew: false, derr: '' }); draw(true); openAnim('#app .edw'); return; }
-  if (a === 'lopen') { const id2 = b.closest('[data-leg]').dataset.leg, x = (T.info.travel || []).find(z => z.id === id2); if (!x) return; Object.assign(Ed, { kind: 'leg', open: id2, d: clone(x), isNew: false, derr: '' }); draw(true); openAnim('#app .edw'); return; }
+  if ((a === 'sopen' || a === 'lopen' || a === 'ladd') && Ed.d && !await keepOrDrop(Ed.d)) return;
+  if (a === 'sopen') { const id2 = b.closest('[data-stop]').dataset.stop, x = (T.info.stops || []).find(z => z.id === id2); if (!x) return; Object.assign(Ed, { kind: 'stop', open: id2, d: clone(x), isNew: false, derr: '' }); baseline(Ed.d); draw(true); openAnim('#app .edw'); return; }
+  if (a === 'lopen') { const id2 = b.closest('[data-leg]').dataset.leg, x = (T.info.travel || []).find(z => z.id === id2); if (!x) return; Object.assign(Ed, { kind: 'leg', open: id2, d: clone(x), isNew: false, derr: '' }); baseline(Ed.d); draw(true); openAnim('#app .edw'); return; }
   if (a === 'ladd') { const d = { id: rid(8), kind: 'flug', title: '', who: [] }; Object.assign(Ed, { kind: 'leg', open: d.id, d, isNew: true, derr: '' }); draw(true); openForm('#app .edw', '#elt'); return; }
-  if (a === 'dcancel') return closeForm('#app .edw', () => { if (Ed.d) delete PS['stay-' + Ed.d.id]; Object.assign(Ed, { kind: '', open: '', d: null, isNew: false, derr: '' }); });
+  if (a === 'dcancel') { if (!await keepOrDrop(Ed.d)) return; return closeForm('#app .edw', () => { if (Ed.d) delete PS['stay-' + Ed.d.id]; Object.assign(Ed, { kind: '', open: '', d: null, isNew: false, derr: '' }); }); }
   if (a === 'dsave') return saveDraft();
   if (a === 'ncancel') { Object.assign(Ed, { name: T.info.name, from: T.info.from || '', to: T.info.to || '', err: '' }); return draw(true); }
   if (a === 'nsave') return saveNameDates();
@@ -1820,8 +1851,8 @@ $('app').addEventListener('click', async e => {
   if (a === 'leave') return leaveTrip();
   if (a === 'tdel') return deleteTrip();
 });
-$('back').addEventListener('click', () => { if (view.n === 'new' && Wz.step > 0 && Wz.step < WSTEPS.length - 1) { navTo('pop', () => { Wz.step--; if (WSTEPS[Wz.step] === 'stay' && !Wz.stops.length) Wz.step--; Wz.err = ''; draw(true); scrollTo(0, 0); }); return; }
-  if (view.n === 'new' || view.n === 'home') Wz = null; return go(backTarget()); });
+$('back').addEventListener('click', () => { if (view.n === 'new' && Wz.step > 0 && Wz.step < WSTEPS.length - 1) return go(wizHash(wizPrev(Wz)));
+  return go(backTarget()); });   // den Entwurf des Assistenten behalten: „Reise planen“ macht dort weiter
 /* ---------- Bewegung: Gleichartiges bewegt sich gleich (DESIGN.md Abschnitt 5) ----------
    Aufklappen: Höhe + Deckkraft, Dauer wächst mit der Höhe (0,32–0,56 s), Kurve (.45,0,.15,1); Zuklappen ¾ der Zeit, Kurve (.4,0,.2,1).
    Pfeil dreht sich im selben Takt. Umschalter: Perle gleitet 0,42 s (Feder), neuer Inhalt blendet ein. Während einer Bewegung warten Live-Daten (slides). */
@@ -1846,7 +1877,7 @@ function glideTo(y, done) { const A = $('app'), max = document.documentElement.s
 // Formular öffnen: Formular steht sofort in voller Größe (das iPhone rechnet dann richtig), blendet ein, die Seite gleitet so,
 // dass es direkt unter der Leiste oben steht; erstes Feld bekommt sofort den Fokus (noch im Tipp, sonst keine Tastatur)
 let formY = null;
-function openForm(el, fsel) { el = q(el); if (!el) return; if (formY == null) formY = scrollY;
+function openForm(el, fsel) { [F, Cf, Rv, Ed && Ed.d].forEach(baseline); el = q(el); if (!el) return; if (formY == null) formY = scrollY;
   if (!calm()) el.animate([{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'none' }], { duration: 300, easing: MO.on });
   glideTo(el.getBoundingClientRect().top + scrollY - topGap());
   const f = fsel && document.querySelector(fsel); if (f) f.focus({ preventScroll: true }); }
@@ -1884,6 +1915,9 @@ function segPos() { document.querySelectorAll('#app .seg2').forEach(s => { const
 function segMove(btn) { const s = btn.closest('.seg2'), ind = s.querySelector('.ind2'); s.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === btn)); ind.style.width = btn.offsetWidth + 'px'; ind.style.translate = (btn.offsetLeft - 4) + 'px 0'; }
 
 /* ---------- Vorschläge speichern, mitmachen, kommentieren ---------- */
+// Ohne Netz bestätigt die Datenbank erst, wenn wieder Netz da ist: Meldung dann sofort zeigen und sagen, dass es später rausgeht
+async function wrote(p, msg) { if (offline()) { toast(msg + ' · geht raus, sobald wieder Netz da ist'); await p; return; } await p; toast(msg); }
+const goneMsg = () => { document.activeElement?.blur?.(); toast('Den Vorschlag gibt es nicht mehr'); draw(true); };
 const alive = id => T && T.acts && T.acts.some(a => a.id === id);
 async function saveAct() { const f = F; if (!f) return; const title = f.title.trim(); f.err = ''; if (!title) { f.err = f.cat === 'food' ? 'Bitte schreib, was es zu essen gibt.' : 'Bitte schreib, was ansteht.'; draw(true); return; }
   const pl = f.place && f.place.name ? { name: f.place.name.slice(0, 80), ...(typeof f.place.lat === 'number' ? { lat: f.place.lat, lng: f.place.lng } : {}), ...(f.place.addr ? { addr: f.place.addr.slice(0, 120) } : {}) } : null;
@@ -1892,13 +1926,13 @@ async function saveAct() { const f = F; if (!f) return; const title = f.title.tr
     if (f.id === 'new') { const id = rid(16), b = writeBatch(db); flash = id; if (stopF && data.stop && data.stop !== stopF) stopF = '';   // Neues für ein anderes Ziel: Filter auf alle, sonst wäre es unsichtbar
       b.set(tdoc(t.id, 'acts', id), { ...data, ...(pl ? { place: pl } : {}), cat: f.cat, kind: f.cat === 'food' ? f.kind : '', by: t.me, ts: Date.now() });
       b.set(tdoc(t.id, 'signups', id + '_' + t.me), { act: id, pid: t.me });   // wer vorschlägt, ist automatisch dabei
-      await b.commit(); toast('Vorgeschlagen'); }
-    else { if (!alive(f.id)) return toast('Den Vorschlag gibt es nicht mehr'); await updateDoc(tdoc(t.id, 'acts', f.id), { ...data, place: pl || deleteField(), ...(f.cat === 'food' ? { kind: f.kind } : {}) }); toast('Gespeichert'); }
+      await wrote(b.commit(), 'Vorgeschlagen'); }
+    else { if (!alive(f.id)) return toast('Den Vorschlag gibt es nicht mehr'); await wrote(updateDoc(tdoc(t.id, 'acts', f.id), { ...data, place: pl || deleteField(), ...(f.cat === 'food' ? { kind: f.kind } : {}) }), 'Gespeichert'); }
   } catch (e) { console.error(e); toast(FAIL); if (T === t && !F) { F = f; draw(true); } }   // Getipptes kommt zurück
 }
 async function toggleGo(id) { const t = T, ref = tdoc(t.id, 'signups', id + '_' + t.me), on = t.sig.some(s => s.act === id && s.pid === t.me);
-  try { if (on) await deleteDoc(ref); else { if (!alive(id)) return; await setDoc(ref, { act: id, pid: t.me }); } } catch (e) { console.error(e); toast(FAIL); } }
-async function sendCm(id) { const t = T, txt = (cmDraft[id] || '').trim(); if (!txt || !alive(id)) return; delete cmDraft[id];
+  try { if (on) await deleteDoc(ref); else { if (!alive(id)) return goneMsg(); await setDoc(ref, { act: id, pid: t.me }); } } catch (e) { console.error(e); toast(FAIL); } }
+async function sendCm(id) { const t = T, txt = (cmDraft[id] || '').trim(); if (!txt) return; if (!alive(id)) { delete cmDraft[id]; cmOpen.delete(id); return goneMsg(); } delete cmDraft[id];
   document.activeElement?.blur?.();
   try { const w = setDoc(tdoc(t.id, 'acts', id), { cm: { [rid(10)]: { by: t.me, t: txt, ts: Date.now() } } }, { merge: true });
     await Promise.race([w, new Promise(r => setTimeout(r, 80))]); draw(true); await w; readCm(id); } catch (e) { console.error(e); cmDraft[id] = txt; toast(FAIL); draw(true); } }
@@ -1909,12 +1943,12 @@ async function delAct(id) { const a = T.acts.find(x => x.id === id); if (!a) ret
   softDel([id], async () => { await deleteDoc(tdoc(t.id, 'acts', id)); cmOpen.delete(id); await Promise.all(sig.map(s => deleteDoc(tdoc(t.id, 'signups', id + '_' + s.pid)).catch(() => {}))); },
     () => { if (T === t && !t.acts.some(x => x.id === id)) t.acts.push(a); }); }
 async function setDone(id, on) { const a = T.acts.find(x => x.id === id); if (!a) return;
-  if (on && !await ask({ t: `„${a.title}“ als erledigt markieren?`, m: 'Der Vorschlag wandert für alle nach unten zu „Erledigt“.', ok: 'Erledigt' })) return; if (!alive(id)) return;
-  try { await updateDoc(tdoc(T.id, 'acts', id), on ? { done: Date.now(), dby: T.me } : { done: deleteField(), dby: deleteField() }); toast(on ? 'Erledigt' : 'Wieder offen'); if (!on) setTimeout(() => goToCard(id), 60); } catch (e) { console.error(e); toast(FAIL); } }
+  if (on && !await ask({ t: `„${a.title}“ als erledigt markieren?`, m: 'Der Vorschlag wandert für alle nach unten zu „Erledigt“.', ok: 'Erledigt' })) return; if (!alive(id)) return goneMsg();
+  try { await wrote(updateDoc(tdoc(T.id, 'acts', id), on ? { done: Date.now(), dby: T.me } : { done: deleteField(), dby: deleteField() }), on ? 'Erledigt' : 'Wieder offen'); if (!on) setTimeout(() => goToCard(id), 60); } catch (e) { console.error(e); toast(FAIL); } }
 async function saveRes() { const r = Rv; if (!r) return; const p = parseInt(r.p, 10);
   r.err = ''; if (!r.t && !(p > 0)) { r.err = 'Bitte Uhrzeit oder Personen eintragen.'; return draw(true); } if (r.p && !(p > 0 && p < 100)) { r.err = 'Bei Personen bitte eine Zahl von 1 bis 99 eintragen.'; return draw(true); }
-  Rv = null; shut(`#app [data-id="${r.id}"] .rvw`, null, () => draw(true)); if (!alive(r.id)) return;
-  const t = T; try { await updateDoc(tdoc(t.id, 'acts', r.id), { res: { t: r.t || '', p: p > 0 ? p : 0 } }); toast('Gespeichert'); } catch (e) { console.error(e); toast(FAIL); if (T === t && !Rv) { Rv = r; draw(true); } } }   // Getipptes kommt zurück
+  Rv = null; shut(`#app [data-id="${r.id}"] .rvw`, null, () => draw(true)); if (!alive(r.id)) return goneMsg();
+  const t = T; try { await wrote(updateDoc(tdoc(t.id, 'acts', r.id), { res: { t: r.t || '', p: p > 0 ? p : 0 } }), 'Gespeichert'); } catch (e) { console.error(e); toast(FAIL); if (T === t && !Rv) { Rv = r; draw(true); } } }   // Getipptes kommt zurück
 async function saveProfile() { const name = Pf.name.trim(); Pf.err = ''; if (!name) { Pf.err = 'Bitte gib deinen Namen ein.'; return draw(true); }
   if (Object.entries(T.people).some(([id, p]) => id !== T.me && norm(p.name) === norm(name))) { Pf.err = 'Den Namen gibt es in dieser Reise schon.'; return draw(true); }
   if (offline()) { Pf.err = OFFLINE; return draw(true); }
@@ -1949,7 +1983,7 @@ async function archShop() { const ids = [GEN, ...T.acts.filter(a => a.cat === 'f
   if (!n || !await ask({ t: n === 1 ? '1 abgehakten Eintrag ins Archiv?' : n + ' abgehakte Einträge ins Archiv?', m: 'Von dort kommen sie mit einem Tipp zurück auf die Liste.', ok: 'Ins Archiv' })) return;
   try { const b = writeBatch(db); for (const [id, xs] of todo) { const u = {}; xs.forEach(x => { u['shop.' + x.k + '.arch'] = now;
       shopItems(id, true).filter(o => fold(o.t) === fold(x.t)).forEach(o => { u['shop.' + o.k] = deleteField(); }); });   // gleicher Text nie doppelt im Archiv
-    b.update(shopRef(id), u); } await b.commit(); toast('Im Archiv'); } catch (e) { console.error(e); toast(FAIL); } }
+    b.update(shopRef(id), u); } await wrote(b.commit(), 'Im Archiv'); } catch (e) { console.error(e); toast(FAIL); } }
 
 /* ---------- Kosten speichern ---------- */
 async function saveCost() { const f = Cf; if (!f) return; const amt = parseAmt(f.amt);
@@ -1967,15 +2001,15 @@ async function saveCost() { const f = Cf; if (!f) return; const amt = parseAmt(f
       data.for = Object.keys(sh); data.sh = sh; } if (DAY_OK(f.dt) && f.dt !== today()) data.dt = f.dt; }
   const t = T; Cf = null; closeForm('#cform');
   try { if (f.id) { const old = t.costs.find(c => c.id === f.id); if (!old) return toast('Die Ausgabe gibt es nicht mehr');
-      await setDoc(tdoc(t.id, 'costs', f.id), { ...data, dt: data.dt || (DAY_OK(f.dt) ? f.dt : ''), ts: old.ts, cby: old.cby, ets: Date.now(), eby: t.me }); toast('Gespeichert'); }
-    else { const id = rid(16); flash = id; await setDoc(tdoc(t.id, 'costs', id), { ...data, ts: Date.now(), cby: t.me }); toast('Eingetragen'); } }
+      await wrote(setDoc(tdoc(t.id, 'costs', f.id), { ...data, dt: data.dt || (DAY_OK(f.dt) ? f.dt : ''), ts: old.ts, cby: old.cby, ets: Date.now(), eby: t.me }), 'Gespeichert'); }
+    else { const id = rid(16); flash = id; await wrote(setDoc(tdoc(t.id, 'costs', id), { ...data, ts: Date.now(), cby: t.me }), 'Eingetragen'); } }
   catch (e) { console.error(e); toast(FAIL); if (T === t && !Cf) { Cf = f; draw(true); } } }
 async function delCost(id) { const c = T.costs.find(x => x.id === id); if (!c) return;
   const t = T; Cf = null; t.costs = t.costs.filter(x => x.id !== id);
   softDel([id], () => deleteDoc(tdoc(t.id, 'costs', id)), () => { if (T === t && !t.costs.some(x => x.id === id)) t.costs.push(c); }); }
 async function tickPay(from, to, amt) { const t = T;
   if (!await ask({ t: 'Ist das Geld angekommen?', m: `${P(from).name} → ${P(to).name}: ${eur(amt)}. Danach ist die Überweisung für alle abgehakt.`, ok: 'Ja, erledigt' })) return;
-  try { await setDoc(tdoc(t.id, 'costs', rid(16)), { title: 'Ausgleich', kind: 'pay', amt, by: from, for: [to], ts: Date.now(), cby: t.me }); toast('Abgehakt'); } catch (e) { console.error(e); toast(FAIL); } }
+  try { await wrote(setDoc(tdoc(t.id, 'costs', rid(16)), { title: 'Ausgleich', kind: 'pay', amt, by: from, for: [to], ts: Date.now(), cby: t.me }), 'Abgehakt'); } catch (e) { console.error(e); toast(FAIL); } }
 
 /* ---------- Reise bearbeiten, Link erneuern, verlassen, löschen ---------- */
 const ndirty = () => !!(Ed && T && T.info && (Ed.name !== T.info.name || Ed.from !== (T.info.from || '') || Ed.to !== (T.info.to || '')));
