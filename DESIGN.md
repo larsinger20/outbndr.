@@ -57,6 +57,8 @@ Stand: 10.11.2026. **Vorlage mit allen Mustern zum Abschauen: `vorlagen/glas-pro
   - Während einer Bewegung warten Live-Daten anderer (`slides`), damit nichts abreißt.
 - **Nichts springt** (16.11.2026): Ändert sich eine Liste (Daumen, Löschen, Rückgängig, Erledigt, Neues von anderen), gleiten die Kacheln 0,36 s an ihren Platz, Neues blendet ein, Verschwundenes blendet an alter Stelle aus. Beim Reiterwechsel bleibt der Kopf stehen, nur der Inhalt blendet ein. Schalter gleiten wie in iOS. Zustände nie hart austauschen, wenn das Element sichtbar bleibt.
 - **Nachfrage-Fenster** (gemessen am Home-Bildschirm „App entfernen“, Aufnahme Lars 16.11.2026, 60 Bilder/s): erscheint etwas zu groß und durchsichtig (ca. 1,15–1,2-fach) und zieht sich in ca. 0,25 s auf seine Größe zusammen, **ohne Nachfedern**; beim Schließen wächst es wieder leicht (ca. 1,1-fach) und blendet in ca. 0,15 s aus. Im Code `dPop` (1,18 → 1, 0,26 s, iOS-Kurve) und `dPopOut` (1 → 1,12, 0,16 s). Vorher poppte es von 0,9 mit Nachfedern auf und blendete nur aus.
+- **Verwerfen nur nach Nachfrage** (17.11.2026, wie iOS Kalender/Erinnerungen): „Abbrechen“ in einem geänderten Formular fragt „Änderungen verwerfen?“ mit „Verwerfen“ (rot) und „Weiter bearbeiten“. Lange Knöpfe stehen im Nachfrage-Fenster untereinander, die Hauptaktion oben.
+- **Zurückwischen** führt immer genau eine Seite bzw. einen Assistent-Schritt zurück; offene Formulare überleben das.
 - **Filter** sind Umschalter (Segmented Control) wie in iOS, keine losen Pillen; erst ab 5 Einträgen eine wischbare Pillen-Zeile. Ändert sich eine Liste (Filter), gleiten die Kacheln an ihre neue Stelle, nichts springt.
 - **Antippen statt Berühren** bei Auswahllisten (Ortsvorschläge): Übernommen wird erst beim Loslassen ohne Bewegung und ohne Scrollen (Lars: Scrollen übernahm sonst einen Vorschlag).
 
@@ -90,7 +92,7 @@ Stand: 10.11.2026. **Vorlage mit allen Mustern zum Abschauen: `vorlagen/glas-pro
 
 ## 8. Bedienung
 - **Kein Wischen, kein Halte-Menü auf Kacheln** (Entscheidung Lars: in einer Web-App schwer zu bedienen und nicht intuitiv). Alles läuft sichtbar über ⋯.
-- Tippflächen mind. 44.
+- Tippflächen mind. 44. Kleine Knöpfe behalten ihr Aussehen und bekommen eine unsichtbar größere Fläche (`::after`); nur Umschalter sind wie bei Apple 36 hoch.
 
 ## 9. Bewusste Abweichungen
 - Web-App statt echter App; Lichtbrechung nur über die Inhalts-Kopie am Rand.
